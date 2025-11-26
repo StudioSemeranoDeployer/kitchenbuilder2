@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Kitchen Studio 3D | Awwwards Pro</title>
+    <title>Kitchen Studio 3D | Ultimate</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
     <!-- Fonts -->
@@ -11,47 +11,90 @@
     
     <style>
         :root {
-            --bg-color: #f4f2f0;
-            --accent: #ff5722;
+            --bg-color: #f0ece9; /* Tono caldo 'Gallery' */
+            --accent: #d9775f;   /* Terracotta */
             --glass: rgba(255, 255, 255, 0.85);
-            --glass-border: 1px solid rgba(255, 255, 255, 0.5);
-            --blur: blur(20px);
-            --text-main: #1a1a1a;
+            --glass-border: 1px solid rgba(255, 255, 255, 0.6);
+            --blur: blur(24px);
+            --text-main: #2a2a2a;
             --ease: cubic-bezier(0.23, 1, 0.32, 1);
         }
 
-        body { margin: 0; overflow: hidden; font-family: 'Inter Tight', sans-serif; background: var(--bg-color); color: var(--text-main); height: 100vh; width: 100vw; user-select: none; -webkit-user-select: none; }
-        #ui-layer { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; overflow: hidden; font-family: 'Inter Tight', sans-serif; background: var(--bg-color); color: var(--text-main); height: 100vh; width: 100vw; user-select: none; touch-action: none; }
+        
+        #ui-layer { position: absolute; inset: 0; pointer-events: none; z-index: 10; display: flex; flex-direction: column; justify-content: space-between; }
 
         /* HEADER */
-        header { position: absolute; top: 0; left: 0; width: 100%; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; }
-        .logo { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 8px; pointer-events: auto; }
-        .badge { font-size: 9px; background: #000; color: white; padding: 3px 6px; border-radius: 4px; font-weight: 700; }
+        header { 
+            padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; 
+            background: linear-gradient(to bottom, rgba(240,236,233,0.9), transparent);
+        }
+        .logo { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 8px; pointer-events: auto; letter-spacing: -0.5px; }
+        .badge { font-size: 10px; background: #222; color: white; padding: 4px 6px; border-radius: 6px; font-weight: 700; }
+        
         .actions { display: flex; gap: 10px; pointer-events: auto; }
-        .icon-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--glass); backdrop-filter: var(--blur); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.05); font-size: 16px; border: var(--glass-border); }
-        .icon-btn:active { transform: scale(0.9); }
+        .icon-btn { 
+            width: 42px; height: 42px; border-radius: 12px; 
+            background: var(--glass); backdrop-filter: var(--blur); border: var(--glass-border);
+            display: flex; align-items: center; justify-content: center; cursor: pointer; 
+            transition: all 0.2s var(--ease); box-shadow: 0 4px 15px rgba(0,0,0,0.05); font-size: 18px; 
+        }
+        .icon-btn:hover { transform: translateY(-2px); background: white; }
+        .icon-btn:active { transform: scale(0.95); }
 
-        /* DOCK */
-        #dock-wrapper { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 12px; pointer-events: none; width: 90%; max-width: 800px; }
-        .dock { pointer-events: auto; background: rgba(20, 20, 20, 0.9); backdrop-filter: blur(25px); padding: 6px; border-radius: 24px; display: flex; gap: 4px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
-        .dock-tab { padding: 10px 20px; border-radius: 18px; color: rgba(255,255,255,0.6); cursor: pointer; font-size: 13px; font-weight: 500; transition: 0.3s var(--ease); }
+        /* DOCK AREA */
+        #dock-wrapper { 
+            margin-bottom: 30px; align-self: center; display: flex; flex-direction: column; align-items: center; gap: 12px; 
+            pointer-events: none; width: 94%; max-width: 850px; 
+        }
+
+        /* TABS */
+        .dock { 
+            pointer-events: auto; background: rgba(30, 30, 30, 0.85); backdrop-filter: blur(30px); 
+            padding: 6px; border-radius: 20px; display: flex; gap: 4px; box-shadow: 0 20px 60px rgba(0,0,0,0.25); 
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .dock-tab { 
+            padding: 10px 20px; border-radius: 14px; color: rgba(255,255,255,0.6); cursor: pointer; 
+            font-size: 13px; font-weight: 500; transition: 0.3s var(--ease); display: flex; gap:6px; align-items: center;
+        }
         .dock-tab:hover { color: white; background: rgba(255,255,255,0.1); }
-        .dock-tab.active { background: white; color: black; font-weight: 700; transform: translateY(-2px); }
+        .dock-tab.active { background: white; color: #111; font-weight: 700; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
 
-        /* CARDS */
-        #cards-container { pointer-events: auto; display: flex; gap: 8px; overflow-x: auto; padding: 10px; background: var(--glass); backdrop-filter: var(--blur); border-radius: 24px; border: var(--glass-border); box-shadow: 0 10px 40px rgba(0,0,0,0.1); max-width: 100%; scrollbar-width: none; opacity: 0; transform: translateY(20px); transition: 0.4s var(--ease); }
+        /* CARDS SCROLLER */
+        #cards-container { 
+            pointer-events: auto; display: flex; gap: 8px; overflow-x: auto; padding: 12px; 
+            background: var(--glass); backdrop-filter: var(--blur); border-radius: 24px; 
+            border: var(--glass-border); box-shadow: 0 10px 40px rgba(0,0,0,0.08); 
+            max-width: 100%; scrollbar-width: none; opacity: 0; transform: translateY(20px); 
+            transition: 0.4s var(--ease); 
+        }
         #cards-container.visible { opacity: 1; transform: translateY(0); }
-        .card { min-width: 75px; height: 85px; background: white; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; cursor: pointer; transition: 0.2s; border: 1px solid transparent; }
-        .card:hover { transform: translateY(-4px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .card:active { transform: scale(0.95); }
-        .card-icon { font-size: 24px; }
-        .card-label { font-size: 10px; font-weight: 600; color: #444; }
-        .card.action-delete { color: #e74c3c; background: #fdedec; }
+        
+        .card { 
+            min-width: 80px; height: 90px; background: white; border-radius: 16px; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; 
+            cursor: pointer; transition: 0.2s var(--ease); border: 1px solid transparent; 
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); border-color: var(--accent); }
+        .card:active { transform: scale(0.96); }
+        .card-icon { font-size: 26px; }
+        .card-label { font-size: 11px; font-weight: 600; color: #444; }
+        
+        /* Utility Colors */
+        .action-delete { color: #d32f2f; background: #ffebee; }
+        .action-copy { color: #1976d2; background: #e3f2fd; }
 
         /* LOADER */
-        #loader { position: fixed; inset: 0; z-index: 9999; background: #f4f2f0; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s; }
-        .loader-spin { width: 40px; height: 40px; border: 4px solid #ddd; border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
+        #loader { position: fixed; inset: 0; z-index: 9999; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.6s; }
+        .loader-bar { width: 100px; height: 3px; background: rgba(0,0,0,0.1); border-radius: 3px; overflow: hidden; margin-top: 15px; }
+        .loader-prog { width: 0%; height: 100%; background: var(--accent); animation: load 1s ease-out forwards; }
+        @keyframes load { to { width: 100%; } }
+
+        /* TOAST */
+        #toast { position: absolute; top: 90px; left: 50%; transform: translateX(-50%); background: #222; color: white; padding: 8px 16px; border-radius: 30px; font-size: 12px; font-weight: 600; opacity: 0; transition: 0.3s; pointer-events: none; }
+        #toast.show { opacity: 1; transform: translateX(-50%) translateY(10px); }
     </style>
     
     <script type="importmap">
@@ -61,26 +104,32 @@
 <body>
 
     <div id="loader">
-        <div class="loader-spin"></div>
-        <p style="margin-top:20px; font-size:12px; font-weight:600; opacity:0.6;">INITIALIZING ENGINE</p>
+        <div style="font-weight:800; font-size:24px; letter-spacing:-1px;">KITCHEN<span style="color:var(--accent)">STUDIO</span></div>
+        <div class="loader-bar"><div class="loader-prog"></div></div>
     </div>
 
     <div id="ui-layer">
         <header>
-            <div class="logo"><div style="width:16px; height:16px; background:var(--accent); border-radius:4px;"></div>GECO<span>.srl</span><div class="badge">PRO</div></div>
+            <div class="logo"><div style="width:18px; height:18px; background:var(--accent); border-radius:5px;"></div>GECO<span>.srl</span><div class="badge">V6</div></div>
             <div class="actions">
-                <div class="icon-btn" onclick="app.toggleView()">📐</div>
-                <div class="icon-btn" onclick="app.screenshot()">📷</div>
+                <div class="icon-btn" onclick="app.undo()" title="Annulla">↶</div>
+                <div class="icon-btn" onclick="app.redo()" title="Ripeti">↷</div>
+                <div class="icon-btn" onclick="app.toggleView()" title="2D/3D">📐</div>
+                <div class="icon-btn" onclick="app.screenshot()" title="Foto">📷</div>
             </div>
         </header>
+
+        <div id="toast">Project Saved</div>
 
         <div id="dock-wrapper">
             <div id="cards-container"></div>
             <div class="dock">
-                <div class="dock-tab active" onclick="ui.setTab('kitchen', this)">Moduli</div>
-                <div class="dock-tab" onclick="ui.setTab('appliances', this)">Elettro</div>
-                <div class="dock-tab" onclick="ui.setTab('materials', this)">Finiture</div>
-                <div class="dock-tab" onclick="ui.setTab('save', this)">File</div>
+                <div class="dock-tab active" onclick="ui.setTab('kitchen', this)"><span>🧊</span> Moduli</div>
+                <div class="dock-tab" onclick="ui.setTab('wardrobes', this)"><span>🚪</span> Armadi</div>
+                <div class="dock-tab" onclick="ui.setTab('appliances', this)"><span>🔥</span> Elettro</div>
+                <div class="dock-tab" onclick="ui.setTab('materials', this)"><span>🎨</span> Finiture</div>
+                <div class="dock-tab" onclick="ui.setTab('extra', this)"><span>💡</span> Extra</div>
+                <div class="dock-tab" onclick="ui.setTab('file', this)"><span>💾</span> File</div>
             </div>
         </div>
     </div>
@@ -90,129 +139,270 @@
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
-        // --- CONFIG ---
-        const CONFIG = { snap: 10, bgColor: 0xf4f2f0 };
-        const state = { modules: [], selected: null, dragging: false, history: [], color: 'white_matte' };
+        // --- GLOBAL CONFIG ---
+        const CONFIG = { snap: 12, bgColor: 0xf0ece9 };
+        const state = { 
+            modules: [], selected: null, dragging: false, 
+            history: [], hIndex: -1, 
+            color: 'white_matte', view2D: false 
+        };
         
+        // --- THREE VARIABLES ---
         let scene, camera, renderer, controls, raycaster;
         let mainGroup, labelsGroup, dragPlane;
         
-        // --- SAFE UTILS ---
-        const generateID = () => 'id_' + Math.random().toString(36).substr(2, 9);
-
-        // --- PUBLIC API EXPORT ---
+        // --- PUBLIC API ---
         window.app = {
             spawn: (t) => core.spawn(t),
             color: (c) => core.setColor(c),
             delete: () => core.delete(),
             rotate: () => core.rotate(),
             duplicate: () => core.duplicate(),
+            undo: () => history.undo(),
+            redo: () => history.redo(),
             toggleView: () => core.toggleView(),
-            screenshot: () => core.renderHQ(),
+            screenshot: () => core.screenshot(),
+            importCAD: () => core.loadCAD(),
             reset: () => core.reset()
         };
 
-        // --- BUILDER (DEFINED FIRST) ---
+        // --- ID GENERATOR (SAFE) ---
+        const uuid = () => 'id_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+
+        // --- BUILDER ENGINE ---
         const builder = {
-            materials: {},
+            cache: {},
+            
+            // Materials System (PBR)
             getMat: (id) => {
-                if(builder.materials[id]) return builder.materials[id];
-                const pbr = (c, r=0.5, m=0) => new THREE.MeshPhysicalMaterial({ color:c, roughness:r, metalness:m });
-                let mat;
-                if(id === 'white_matte') mat = pbr(0xffffff, 0.9);
-                else if(id === 'white_gloss') { mat = pbr(0xffffff, 0.1); mat.clearcoat=1; }
-                else if(id === 'black') mat = pbr(0x222222, 0.8);
-                else if(id === 'sage') mat = pbr(0x9caf88, 0.8);
-                else if(id === 'navy') mat = pbr(0x2c3e50, 0.8);
-                else if(id === 'wood') mat = builder.woodTex(0xd2b48c);
-                else if(id === 'steel') mat = pbr(0xcccccc, 0.3, 0.8);
-                else if(id === 'glass') { mat = pbr(0xffffff, 0, 0); mat.transmission=0.9; mat.opacity=0.3; mat.transparent=true; }
-                else mat = pbr(0xffffff, 0.5);
-                builder.materials[id] = mat;
-                return mat;
+                if(builder.cache[id]) return builder.cache[id];
+                
+                const pbr = (c, r=0.5, m=0, t=0) => new THREE.MeshPhysicalMaterial({
+                    color: c, roughness: r, metalness: m, transmission: t,
+                    envMapIntensity: 1.0, clearcoat: t>0?1:0
+                });
+
+                let m;
+                switch(id) {
+                    case 'white_matte': m = pbr(0xffffff, 0.9); break;
+                    case 'white_gloss': m = pbr(0xffffff, 0.15, 0, 0); m.clearcoat=1; break;
+                    case 'tortora':     m = pbr(0xd2c6b8, 0.8); break; // Rosa/Tortora richiesto
+                    case 'sage':        m = pbr(0x9caea9, 0.8); break;
+                    case 'anthracite':  m = pbr(0x2b2b2b, 0.8); break;
+                    case 'wood':        m = builder.texWood(0xc8a888); break;
+                    case 'walnut':      m = builder.texWood(0x6b5042); break;
+                    case 'steel':       m = pbr(0xcccccc, 0.3, 0.8); break;
+                    case 'glass':       m = pbr(0xffffff, 0.05, 0, 0.9); m.transparent=true; break;
+                    case 'black':       m = pbr(0x111111, 0.8); break;
+                    default:            m = pbr(0xffffff, 0.5);
+                }
+                builder.cache[id] = m;
+                return m;
             },
-            woodTex: (col) => {
-                const c = document.createElement('canvas'); c.width=256; c.height=256;
-                const x = c.getContext('2d'); x.fillStyle='#'+new THREE.Color(col).getHexString(); x.fillRect(0,0,256,256);
-                x.globalAlpha=0.1; for(let i=0;i<50;i++){ x.beginPath(); x.moveTo(0,Math.random()*256); x.bezierCurveTo(100,Math.random()*256,200,Math.random()*256,256,Math.random()*256); x.stroke(); }
-                return new THREE.MeshPhysicalMaterial({ map:new THREE.CanvasTexture(c), roughness:0.7 });
+
+            texWood: (col) => {
+                const cv = document.createElement('canvas'); cv.width=512; cv.height=512;
+                const ctx = cv.getContext('2d');
+                ctx.fillStyle = '#' + new THREE.Color(col).getHexString(); ctx.fillRect(0,0,512,512);
+                ctx.globalAlpha=0.06; ctx.globalCompositeOperation='multiply';
+                for(let i=0;i<60;i++){
+                    ctx.beginPath(); ctx.moveTo(Math.random()*512, 0);
+                    ctx.bezierCurveTo(Math.random()*512, 200, Math.random()*512, 400, Math.random()*512, 512);
+                    ctx.strokeStyle='#3e2723'; ctx.lineWidth=2; ctx.stroke();
+                }
+                const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace;
+                return new THREE.MeshPhysicalMaterial({ map:t, roughness:0.6, envMapIntensity:0.6 });
             },
-            build: (data) => {
-                if(data.mesh) { mainGroup.remove(data.mesh); builder.dispose(data.mesh); }
-                const g = new THREE.Group(); g.userData = { isModule: true, id: data.id };
-                const mat = builder.getMat(data.color);
-                const { w, h, d, type } = data;
-                const toe = (['cab_up','hood','lamp'].includes(type)) ? 0 : 10;
+
+            // Geometry Construction
+            build: (d) => {
+                if(d.mesh) { mainGroup.remove(d.mesh); builder.dispose(d.mesh); }
+
+                const g = new THREE.Group();
+                g.userData = { isModule: true, id: d.id };
+                const mat = builder.getMat(d.color);
+                
+                // Misure
+                const { w, h, depth, type } = d; 
+                // Zoccolo solo se non è sospeso o speciale
+                const toe = (['cab_up','hood','lamp','shelf','plant'].includes(type)) ? 0 : 10;
                 const bodyH = h - toe;
 
+                // 1. Zoccolo
                 if(toe > 0) {
-                    const kick = new THREE.Mesh(new THREE.BoxGeometry(w-4, toe, d-4), builder.getMat('black'));
-                    kick.position.set(0, toe/2, -2); g.add(kick);
+                    const kick = new THREE.Mesh(new THREE.BoxGeometry(w-4, toe, depth-4), builder.getMat('anthracite'));
+                    kick.position.set(0, toe/2, -2);
+                    g.add(kick);
                 }
 
+                // 2. Logiche Speciali
                 if(type === 'lamp') {
-                     const pole = new THREE.Mesh(new THREE.CylinderGeometry(2,2,h), builder.getMat('black'));
-                     pole.position.y = h/2;
-                     const shade = new THREE.Mesh(new THREE.ConeGeometry(20, 20, 32, 1, true), builder.getMat('white_matte'));
-                     shade.position.y = h-10;
-                     const light = new THREE.PointLight(0xffaa00, 3, 100); light.position.y = h-15;
-                     g.add(pole, shade, light);
-                } else if (type === 'hood') {
-                    const box = new THREE.Mesh(new THREE.BoxGeometry(w, 40, d), builder.getMat('steel'));
-                    box.position.y = 20; g.add(box);
-                } else {
-                    const body = new THREE.Mesh(new THREE.BoxGeometry(w, bodyH, d), mat);
+                    const wire = new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.5,h), builder.getMat('black'));
+                    wire.position.y = h/2;
+                    const shade = new THREE.Mesh(new THREE.ConeGeometry(18, 20, 32, 1, true), builder.getMat('white_matte'));
+                    shade.position.y = h-15;
+                    const bulb = new THREE.PointLight(0xffaa00, 3, 150); bulb.position.y = h-15;
+                    g.add(wire, shade, bulb);
+                }
+                else if(type === 'plant') {
+                    const pot = new THREE.Mesh(new THREE.CylinderGeometry(12,10,25), builder.getMat('tortora'));
+                    pot.position.y=12.5;
+                    const stem = new THREE.Mesh(new THREE.CylinderGeometry(1,1,40), builder.getMat('sage'));
+                    stem.position.y=40;
+                    g.add(pot, stem);
+                }
+                else if(type === 'hood') {
+                    const box = new THREE.Mesh(new THREE.BoxGeometry(30, 40, 30), builder.getMat('steel'));
+                    box.position.y=h-20;
+                    const plate = new THREE.Mesh(new THREE.BoxGeometry(w, 4, depth), builder.getMat('steel'));
+                    plate.position.y=15;
+                    g.add(box, plate);
+                }
+                else if(type === 'shelf') {
+                    const sh = new THREE.Mesh(new THREE.BoxGeometry(w, h, depth), builder.getMat('wood'));
+                    sh.position.y = h/2; g.add(sh);
+                }
+                else {
+                    // Cassa Standard
+                    const body = new THREE.Mesh(new THREE.BoxGeometry(w, bodyH, depth), mat);
                     body.position.set(0, toe + bodyH/2, 0);
                     body.castShadow = true; body.receiveShadow = true;
                     g.add(body);
+
+                    // Anta / Frontale
+                    const doorThick = 2;
+                    let doorH = bodyH - 0.5;
+                    let doorY = toe + bodyH/2;
                     
-                    const door = new THREE.Mesh(new THREE.BoxGeometry(w-0.5, bodyH-0.5, 2), mat);
-                    door.position.set(0, toe + bodyH/2, d/2+1); door.castShadow=true;
-                    const handle = new THREE.Mesh(new THREE.BoxGeometry(w/3, 1, 2), builder.getMat('black'));
-                    handle.position.set(0, bodyH/2-5, 2);
-                    door.add(handle);
-                    g.add(door);
+                    if(type === 'drawers') {
+                        // 3 Cassetti
+                        const dh = (bodyH - 1)/3;
+                        for(let i=0; i<3; i++) {
+                            const p = new THREE.Mesh(new THREE.BoxGeometry(w-0.5, dh-0.5, doorThick), mat);
+                            p.position.set(0, toe + bodyH - (dh/2) - (i*dh), depth/2 + doorThick/2);
+                            p.castShadow = true;
+                            // Maniglia
+                            const han = new THREE.Mesh(new THREE.BoxGeometry(w/2, 0.5, 1), builder.getMat('black'));
+                            han.position.set(0, dh/2-5, 1); p.add(han);
+                            g.add(p);
+                        }
+                    } else if (type === 'oven') {
+                        // Forno incasso
+                        const glass = new THREE.Mesh(new THREE.BoxGeometry(w-4, 59, 2), builder.getMat('glass_black'));
+                        glass.position.set(0, toe+bodyH-30, depth/2+1);
+                        g.add(glass);
+                    } else if (type === 'sink') {
+                         // Vasca
+                         const sink = new THREE.Mesh(new THREE.BoxGeometry(w-10, 20, depth-10), builder.getMat('steel'));
+                         sink.position.set(0, h, 0); 
+                         const tap = new THREE.Mesh(new THREE.CylinderGeometry(1,1,25), builder.getMat('steel'));
+                         tap.position.set(0, h+12, -10); tap.rotation.x=0.4;
+                         g.add(sink, tap);
+                    } else {
+                        // Anta Unica (Base, Pensile, Colonna, Armadio)
+                        const door = new THREE.Mesh(new THREE.BoxGeometry(w-0.4, doorH, doorThick), mat);
+                        door.position.set(0, doorY, depth/2 + doorThick/2);
+                        door.castShadow = true;
+                        
+                        // Maniglia Verticale o Orizzontale
+                        const isTall = h > 100;
+                        const hanW = isTall ? 1 : w/3;
+                        const hanH = isTall ? 25 : 1;
+                        const hanY = isTall ? 0 : (type.includes('up') ? -doorH/2+5 : doorH/2-5);
+                        const hanX = isTall ? w/2-5 : 0;
+                        
+                        const handle = new THREE.Mesh(new THREE.BoxGeometry(hanW, hanH, 1.5), builder.getMat('black'));
+                        handle.position.set(hanX, hanY, 1.5);
+                        door.add(handle);
+                        g.add(door);
+                    }
                 }
-                
-                g.position.set(data.x, data.y, data.z);
-                g.rotation.y = data.rot;
+
+                g.position.set(d.x, d.y, d.z);
+                g.rotation.y = d.rot;
                 mainGroup.add(g);
-                data.mesh = g;
+                d.mesh = g;
             },
-            updatePos: (d) => { d.mesh.position.set(d.x, d.y, d.z); d.mesh.rotation.y = d.rot; },
-            dispose: (o) => o.traverse(c => { if(c.geometry)c.geometry.dispose(); })
+
+            createLabel: (txt) => {
+                const c = document.createElement('canvas'); c.width=256; c.height=128;
+                const ctx = c.getContext('2d');
+                ctx.fillStyle='rgba(0,0,0,0.7)'; ctx.roundRect(40, 30, 176, 68, 20); ctx.fill();
+                ctx.fillStyle='#fff'; ctx.font='bold 40px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+                ctx.fillText(txt, 128, 64);
+                const t = new THREE.CanvasTexture(c);
+                const s = new THREE.Sprite(new THREE.SpriteMaterial({map:t, depthTest:false, transparent:true}));
+                s.scale.set(40,20,1);
+                return s;
+            },
+
+            dispose: (obj) => {
+                obj.traverse(c => {
+                    if(c.geometry) c.geometry.dispose();
+                    if(c.material) {
+                        if(Array.isArray(c.material)) c.material.forEach(m=>m.dispose());
+                        else c.material.dispose();
+                    }
+                });
+            }
         };
 
-        // --- CORE LOGIC (DEFINED SECOND) ---
+        // --- CORE LOGIC ---
         const core = {
             defs: {
-                base_60: {w:60, h:86, d:60, type:'cab'},
-                base_90: {w:90, h:86, d:60, type:'cab'},
-                drawers: {w:60, h:86, d:60, type:'drawers'},
-                sink:    {w:90, h:86, d:60, type:'sink'},
-                oven:    {w:60, h:86, d:60, type:'oven'},
-                wall_60: {w:60, h:72, d:35, y:144, type:'cab_up'},
-                hood:    {w:90, h:60, d:35, y:144, type:'hood'},
-                tall_60: {w:60, h:216, d:60, type:'tall'},
-                fridge:  {w:60, h:216, d:60, type:'fridge'},
-                lamp:    {w:30, h:120, d:30, y:0, type:'lamp'}
+                // Cucina
+                base_60: {w:60, h:86, depth:60, type:'cab'},
+                base_90: {w:90, h:86, depth:60, type:'cab'},
+                drawers: {w:60, h:86, depth:60, type:'drawers'},
+                sink:    {w:90, h:86, depth:60, type:'sink'},
+                oven:    {w:60, h:86, depth:60, type:'oven'},
+                // Pensili
+                wall_60: {w:60, h:72, depth:35, y:144, type:'cab_up'},
+                wall_90: {w:90, h:72, depth:35, y:144, type:'cab_up'},
+                hood:    {w:90, h:60, depth:35, y:144, type:'hood'},
+                // Colonne
+                tall_60: {w:60, h:216, depth:60, type:'tall'},
+                fridge:  {w:60, h:216, depth:60, type:'fridge'},
+                // Armadi (Richiesta specifica)
+                ward_60: {w:60, h:240, depth:60, type:'ward'},
+                ward_90: {w:90, h:240, depth:60, type:'ward'},
+                // Extra
+                lamp:    {w:30, h:100, depth:30, y:150, type:'lamp'},
+                shelf:   {w:90, h:4, depth:25, y:140, type:'shelf'},
+                plant:   {w:40, h:60, depth:40, y:0, type:'plant'}
             },
 
-            spawn: (t) => {
+            spawn: (t, posOverride=null) => {
                 const def = core.defs[t] || core.defs['base_60'];
-                const data = { id: generateID(), t, x:0, y:def.y||0, z:0, rot:0, color: state.color, ...def };
-                if(state.modules.length > 0) data.x = state.modules[state.modules.length-1].x + 70;
+                const data = { 
+                    id: uuid(), t, 
+                    x: posOverride ? posOverride.x : 0, 
+                    z: posOverride ? posOverride.z : 0,
+                    y: def.y||0, rot:0, color: state.color, ...def 
+                };
+                
+                // Auto-offset se non specificato
+                if(!posOverride && state.modules.length > 0) {
+                    const last = state.modules[state.modules.length-1];
+                    data.x = last.x + last.w/2 + data.w/2 + 2; 
+                }
+
                 builder.build(data);
                 state.modules.push(data);
                 core.select(data);
+                history.save();
             },
 
-            select: (data) => {
-                state.selected = data;
+            select: (d) => {
+                state.selected = d;
                 labelsGroup.clear();
-                if(data && data.mesh) {
-                    const box = new THREE.BoxHelper(data.mesh, 0xff5722);
+                if(d && d.mesh) {
+                    const box = new THREE.BoxHelper(d.mesh, 0xd9775f);
                     labelsGroup.add(box);
+                    // Etichetta quota
+                    const lbl = builder.createLabel(`${d.w}cm`);
+                    lbl.position.set(d.x, d.y + d.h + 20, d.z);
+                    labelsGroup.add(lbl);
                 }
                 ui.refresh();
             },
@@ -223,22 +413,21 @@
                 builder.dispose(state.selected.mesh);
                 state.modules = state.modules.filter(m => m !== state.selected);
                 core.select(null);
+                history.save();
+            },
+
+            rotate: () => {
+                if(!state.selected) return;
+                state.selected.rot += Math.PI/2;
+                builder.updatePos(state.selected);
+                core.select(state.selected); // update box
+                history.save();
             },
 
             duplicate: () => {
                 if(!state.selected) return;
                 const s = state.selected;
-                const data = { ...s, id: generateID(), x: s.x+20, z: s.z+20, mesh: null }; 
-                builder.build(data);
-                state.modules.push(data);
-                core.select(data);
-            },
-
-            rotate: () => {
-                if(!state.selected) return;
-                state.selected.rot += Math.PI / 2;
-                builder.updatePos(state.selected);
-                core.select(state.selected);
+                core.spawn(s.t, {x: s.x+30, z: s.z+30});
             },
 
             setColor: (c) => {
@@ -246,205 +435,310 @@
                 if(state.selected) {
                     state.selected.color = c;
                     builder.build(state.selected);
+                    history.save();
                 }
             },
 
             toggleView: () => {
-                const isTop = camera.position.y > 600;
-                if(isTop) {
-                    camera.position.set(350, 250, 350);
-                    controls.target.set(0, 50, 0);
+                state.view2D = !state.view2D;
+                if(state.view2D) {
+                    moveCamera({x:0, y:800, z:0}, {x:0, y:0, z:0});
                 } else {
-                    camera.position.set(0, 800, 0);
-                    controls.target.set(0, 0, 0);
+                    moveCamera({x:350, y:250, z:350}, {x:0, y:50, z:0});
                 }
             },
-            
-            renderHQ: () => {
+
+            screenshot: () => {
                 renderer.render(scene, camera);
                 const a = document.createElement('a');
-                a.download = 'Render.png';
+                a.download = 'Progetto_GECO.png';
                 a.href = renderer.domElement.toDataURL('image/png'); a.click();
             },
 
+            loadCAD: () => {
+                const i = document.createElement('input'); i.type='file'; i.accept='image/*';
+                i.onchange = e => {
+                    const url = URL.createObjectURL(e.target.files[0]);
+                    const tex = new THREE.TextureLoader().load(url);
+                    const plane = new THREE.Mesh(new THREE.PlaneGeometry(1000, 700), new THREE.MeshBasicMaterial({map:tex, transparent:true, opacity:0.5}));
+                    plane.rotation.x = -Math.PI/2; plane.position.y=0.5;
+                    scene.add(plane);
+                    showToast("CAD Caricato");
+                };
+                i.click();
+            },
+
             reset: () => {
-                if(confirm('Reset Project?')) {
-                    state.modules.forEach(m => mainGroup.remove(m.mesh));
+                if(confirm('Cancellare tutto?')) {
+                    state.modules.forEach(m=>mainGroup.remove(m.mesh));
                     state.modules = [];
                     core.select(null);
+                    history.save();
                 }
             }
         };
 
-        // --- UI (DEFINED THIRD) ---
+        // --- HISTORY ---
+        const history = {
+            save: () => {
+                const json = JSON.stringify(state.modules.map(({mesh,...r})=>r));
+                if(state.history[state.hIndex] === json) return;
+                state.hIndex++;
+                state.history = state.history.slice(0, state.hIndex);
+                state.history.push(json);
+                showToast("Salvato");
+            },
+            undo: () => {
+                if(state.hIndex > 0) {
+                    state.hIndex--;
+                    loadState(state.history[state.hIndex]);
+                }
+            },
+            redo: () => {
+                if(state.hIndex < state.history.length-1) {
+                    state.hIndex++;
+                    loadState(state.history[state.hIndex]);
+                }
+            }
+        };
+
+        function loadState(json) {
+            const data = JSON.parse(json);
+            state.modules.forEach(m => mainGroup.remove(m.mesh));
+            state.modules = [];
+            core.select(null);
+            data.forEach(d => {
+                builder.build(d);
+                state.modules.push(d);
+            });
+        }
+
+        // --- UI MANAGER ---
         const ui = {
             menus: {
-                kitchen: [ {n:'Base 60',i:'◻️',a:()=>app.spawn('base_60')}, {n:'Base 90',i:'▭',a:()=>app.spawn('base_90')}, {n:'Sink',i:'🚰',a:()=>app.spawn('sink')}, {n:'Tall',i:'▮',a:()=>app.spawn('tall_60')}, {n:'Wall',i:'▫️',a:()=>app.spawn('wall_60')} ],
-                appliances: [ {n:'Fridge',i:'❄️',a:()=>app.spawn('fridge')}, {n:'Hood',i:'💨',a:()=>app.spawn('hood')}, {n:'Oven',i:'🍳',a:()=>app.spawn('oven')} ],
-                materials: [ {n:'White',i:'⚪',a:()=>app.color('white_matte')}, {n:'Gloss',i:'✨',a:()=>app.color('white_gloss')}, {n:'Sage',i:'🟢',a:()=>app.color('sage')}, {n:'Navy',i:'🔵',a:()=>app.color('navy')}, {n:'Wood',i:'🌳',a:()=>app.color('wood')} ],
-                save: [ {n:'Clear',i:'🗑',a:()=>app.reset()} ]
+                kitchen: [
+                    {n:'Base 60', i:'◻️', a:()=>app.spawn('base_60')}, {n:'Base 90', i:'▭', a:()=>app.spawn('base_90')},
+                    {n:'Cassetti', i:'≣', a:()=>app.spawn('drawers')}, {n:'Lavello', i:'🚰', a:()=>app.spawn('sink')},
+                    {n:'Pensile', i:'▫️', a:()=>app.spawn('wall_60')}, {n:'Colonna', i:'▮', a:()=>app.spawn('tall_60')}
+                ],
+                wardrobes: [
+                    {n:'Anta 60', i:'🚪', a:()=>app.spawn('ward_60')}, {n:'Doppia', i:'🚪', a:()=>app.spawn('ward_90')}
+                ],
+                appliances: [
+                    {n:'Frigo', i:'❄️', a:()=>app.spawn('fridge')}, {n:'Forno', i:'🍳', a:()=>app.spawn('oven')},
+                    {n:'Cappa', i:'💨', a:()=>app.spawn('hood')}
+                ],
+                materials: [
+                    {n:'Bianco', i:'⚪', a:()=>app.color('white_matte')}, {n:'Tortora', i:'🟤', a:()=>app.color('tortora')},
+                    {n:'Legno', i:'🌳', a:()=>app.color('wood')}, {n:'Gloss', i:'✨', a:()=>app.color('white_gloss')},
+                    {n:'Nero', i:'⚫', a:()=>app.color('anthracite')}
+                ],
+                extra: [
+                    {n:'Lampada', i:'💡', a:()=>app.spawn('lamp')}, {n:'Pianta', i:'🌿', a:()=>app.spawn('plant')},
+                    {n:'Mensola', i:'➖', a:()=>app.spawn('shelf')}, {n:'CAD', i:'📐', a:()=>app.importCAD()}
+                ],
+                file: [
+                    {n:'Reset', i:'🗑', a:()=>app.reset()}
+                ]
             },
             currentCat: null,
-            setTab: (cat, el) => {
-                ui.currentCat = cat;
-                document.querySelectorAll('.dock-tab').forEach(e=>e.classList.remove('active'));
+            
+            setTab: (c, el) => {
+                ui.currentCat = c;
+                document.querySelectorAll('.dock-tab').forEach(e => e.classList.remove('active'));
                 el.classList.add('active');
-                ui.renderCards(cat);
+                ui.render(c);
             },
-            refresh: () => { if(ui.currentCat) ui.renderCards(ui.currentCat); },
-            renderCards: (cat) => {
+            
+            refresh: () => { if(ui.currentCat) ui.render(ui.currentCat); },
+
+            render: (cat) => {
                 const con = document.getElementById('cards-container');
                 con.classList.remove('visible');
                 setTimeout(() => {
                     con.innerHTML = '';
-                    if(state.selected && cat !== 'save') {
-                         [{n:'Rotate',i:'↻',a:app.rotate}, {n:'Clone',i:'📑',a:app.duplicate}, {n:'Delete',i:'✕',a:app.delete, cls:'action-delete'}].forEach(b => ui.addCard(con, b));
-                         const div = document.createElement('div'); div.style.borderRight='1px solid rgba(0,0,0,0.1)'; div.style.margin='0 5px'; con.appendChild(div);
+                    // Pulsanti contestuali
+                    if(state.selected && cat !== 'file') {
+                        [{n:'Ruota',i:'↻',a:app.rotate}, {n:'Copia',i:'📑',a:app.duplicate, c:'action-copy'}, 
+                         {n:'Elimina',i:'✕',a:app.delete, c:'action-delete'}].forEach(b => ui.addBtn(con, b));
+                        const sep = document.createElement('div'); sep.style.borderRight='1px solid #ddd'; sep.style.margin='0 6px';
+                        con.appendChild(sep);
                     }
-                    (ui.menus[cat]||[]).forEach(i => ui.addCard(con, i));
+                    (ui.menus[cat]||[]).forEach(i => ui.addBtn(con, i));
                     con.classList.add('visible');
                 }, 200);
             },
-            addCard: (p, i) => {
-                const c = document.createElement('div'); c.className = `card ${i.cls||''}`;
-                c.innerHTML = `<div class="card-icon">${i.i}</div><div class="card-label">${i.n}</div>`;
-                c.onclick = i.a; p.appendChild(c);
+            
+            addBtn: (p, i) => {
+                const d = document.createElement('div'); d.className = `card ${i.c||''}`;
+                d.innerHTML = `<div class="card-icon">${i.i}</div><div class="card-label">${i.n}</div>`;
+                d.onclick = i.a; p.appendChild(d);
             }
         };
 
-        // --- INIT FUNCTION (DEFINED FOURTH) ---
-        function init() {
-            try {
-                // RENDERER
-                renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
-                renderer.setSize(window.innerWidth, window.innerHeight);
-                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-                renderer.shadowMap.enabled = true;
-                renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-                renderer.toneMapping = THREE.ACESFilmicToneMapping;
-                document.body.appendChild(renderer.domElement);
-
-                // SCENE
-                scene = new THREE.Scene();
-                scene.background = new THREE.Color(CONFIG.bgColor);
-                scene.fog = new THREE.Fog(CONFIG.bgColor, 500, 3000);
-
-                // ENVIRONMENT
-                const pmremGenerator = new THREE.PMREMGenerator(renderer);
-                pmremGenerator.compileEquirectangularShader();
-                scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
-                pmremGenerator.dispose();
-
-                // LIGHTS
-                const sun = new THREE.DirectionalLight(0xfff0e6, 1.5);
-                sun.position.set(200, 500, 300);
-                sun.castShadow = true;
-                sun.shadow.mapSize.set(1024, 1024);
-                sun.shadow.normalBias = 0.04;
-                scene.add(sun);
-                scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-
-                // CAMERA
-                camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 10, 5000);
-                camera.position.set(350, 250, 350);
-                camera.lookAt(0, 50, 0);
-
-                // GROUPS
-                mainGroup = new THREE.Group(); scene.add(mainGroup);
-                labelsGroup = new THREE.Group(); scene.add(labelsGroup);
-                
-                // SHADOW CATCHER
-                const shadowPlane = new THREE.Mesh(new THREE.PlaneGeometry(3000, 3000), new THREE.ShadowMaterial({ opacity: 0.1, color: 0x000000 }));
-                shadowPlane.rotation.x = -Math.PI / 2; shadowPlane.receiveShadow = true; shadowPlane.position.y = 0.1;
-                scene.add(shadowPlane);
-
-                // DRAG PLANE
-                dragPlane = new THREE.Mesh(new THREE.PlaneGeometry(5000, 5000), new THREE.MeshBasicMaterial({ visible: false }));
-                dragPlane.rotation.x = -Math.PI / 2; scene.add(dragPlane);
-
-                // CONTROLS
-                controls = new OrbitControls(camera, renderer.domElement);
-                controls.enableDamping = true; controls.maxPolarAngle = Math.PI / 2 - 0.05;
-
-                // EVENTS
-                raycaster = new THREE.Raycaster();
-                setupInteraction();
-                window.addEventListener('resize', onResize);
-
-                // START
-                animate();
-                
-                // --- SAFE CALLS AFTER INIT ---
-                ui.setTab('kitchen', document.querySelector('.dock-tab.active'));
-                core.spawn('base_60');
-                
-                // Remove Loader
-                setTimeout(() => {
-                    const l = document.getElementById('loader');
-                    l.style.opacity = 0;
-                    setTimeout(() => l.remove(), 500);
-                }, 800);
-
-            } catch (e) {
-                console.error(e);
-                alert("Errore WebGL: " + e.message);
-            }
-        }
-
-        // --- INTERACTION ---
+        // --- INTERACTION & SNAPPING ---
         function setupInteraction() {
             let offset = new THREE.Vector3();
+            
             renderer.domElement.addEventListener('pointerdown', e => {
+                if(state.view2D) return;
                 const hits = getIntersect(e, mainGroup.children);
                 if(hits.length > 0) {
                     let obj = hits[0].object;
                     while(obj.parent && obj.parent !== mainGroup) obj = obj.parent;
                     if(obj.userData.isModule) {
                         state.dragging = true; controls.enabled = false;
-                        const data = state.modules.find(m => m.id === obj.userData.id);
-                        core.select(data);
-                        const planeHit = getIntersect(e, [dragPlane])[0];
-                        if(planeHit) offset.copy(planeHit.point).sub(obj.position);
+                        const d = state.modules.find(m => m.id === obj.userData.id);
+                        core.select(d);
+                        const ph = getIntersect(e, [dragPlane])[0];
+                        if(ph) offset.copy(ph.point).sub(obj.position);
                     }
                 } else {
-                    const bgHit = getIntersect(e, [dragPlane]);
-                    if(bgHit.length>0 && !state.dragging) core.select(null);
+                    const bh = getIntersect(e, [dragPlane]);
+                    if(bh.length > 0 && !state.dragging) core.select(null);
                 }
             });
+
             renderer.domElement.addEventListener('pointermove', e => {
                 if(!state.dragging || !state.selected) return;
                 const hit = getIntersect(e, [dragPlane])[0];
                 if(hit) {
-                    let tx = hit.point.x - offset.x, tz = hit.point.z - offset.z;
-                    // SNAPPING
+                    let tx = hit.point.x - offset.x;
+                    let tz = hit.point.z - offset.z;
+                    
+                    // MAGNETIC SNAP LOGIC
                     const s = state.selected;
-                    state.modules.forEach(other => {
-                        if(other === s) return;
-                        const dx = tx - other.x, dz = tz - other.z;
-                        if(Math.abs(dz) < 10 && Math.abs(Math.abs(dx) - (s.w/2 + other.w/2)) < 15) {
-                            tx = other.x + (dx > 0 ? (s.w/2 + other.w/2) : -(s.w/2 + other.w/2));
-                            tz = other.z;
+                    let snapped = false;
+                    
+                    for(let other of state.modules) {
+                        if(other === s) continue;
+                        const dz = tz - other.z;
+                        
+                        // Se allineati in profondità
+                        if(Math.abs(dz) < 15) {
+                            const dx = tx - other.x;
+                            const touchDist = (s.w/2 + other.w/2);
+                            
+                            // Snap Destra
+                            if(Math.abs(dx - touchDist) < CONFIG.snap) {
+                                tx = other.x + touchDist; tz = other.z; snapped=true;
+                            }
+                            // Snap Sinistra
+                            else if(Math.abs(dx + touchDist) < CONFIG.snap) {
+                                tx = other.x - touchDist; tz = other.z; snapped=true;
+                            }
                         }
-                    });
+                    }
+
                     s.x = tx; s.z = tz;
                     builder.updatePos(s);
-                    core.select(s);
+                    core.select(s); // Update labels
                 }
             });
-            renderer.domElement.addEventListener('pointerup', () => { state.dragging = false; controls.enabled = true; });
+
+            renderer.domElement.addEventListener('pointerup', () => {
+                if(state.dragging) {
+                    state.dragging = false; controls.enabled = true;
+                    history.save();
+                }
+            });
         }
+
         function getIntersect(e, list) {
             const r = renderer.domElement.getBoundingClientRect();
-            raycaster.setFromCamera({ x: ((e.clientX - r.left)/r.width)*2-1, y: -((e.clientY - r.top)/r.height)*2+1 }, camera);
+            raycaster.setFromCamera({ 
+                x: ((e.clientX - r.left)/r.width)*2 - 1, 
+                y: -((e.clientY - r.top)/r.height)*2 + 1 
+            }, camera);
             return raycaster.intersectObjects(list, true);
         }
 
-        function onResize() { camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }
+        // --- ANIMATION UTILS ---
+        function moveCamera(pos, target) {
+            const sPos = camera.position.clone();
+            const sTar = controls.target.clone();
+            let t = 0;
+            const loop = () => {
+                t += 0.03;
+                if(t<=1) {
+                    const e = 1 - Math.pow(1-t, 3);
+                    camera.position.lerpVectors(sPos, new THREE.Vector3(pos.x,pos.y,pos.z), e);
+                    controls.target.lerpVectors(sTar, new THREE.Vector3(target.x,target.y,target.z), e);
+                    requestAnimationFrame(loop);
+                }
+            };
+            loop();
+        }
+
+        function showToast(m) {
+            const t = document.getElementById('toast');
+            t.innerText=m; t.classList.add('show');
+            setTimeout(()=>t.classList.remove('show'), 2000);
+        }
+
+        // --- INIT ---
+        function init() {
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            document.body.appendChild(renderer.domElement);
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(CONFIG.bgColor);
+            scene.fog = new THREE.Fog(CONFIG.bgColor, 500, 3000);
+
+            // Light Env
+            const pmrem = new THREE.PMREMGenerator(renderer);
+            scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+            
+            const sun = new THREE.DirectionalLight(0xfff5e6, 1.5);
+            sun.position.set(200, 500, 300);
+            sun.castShadow = true;
+            sun.shadow.mapSize.set(2048, 2048);
+            sun.shadow.normalBias = 0.04;
+            scene.add(sun);
+            scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 10, 5000);
+            camera.position.set(350, 250, 350);
+            
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true; controls.maxPolarAngle = Math.PI/2 - 0.05;
+            
+            raycaster = new THREE.Raycaster();
+            mainGroup = new THREE.Group(); scene.add(mainGroup);
+            labelsGroup = new THREE.Group(); scene.add(labelsGroup);
+            
+            // Planes
+            const shadowPlane = new THREE.Mesh(new THREE.PlaneGeometry(3000, 3000), new THREE.ShadowMaterial({ opacity: 0.1 }));
+            shadowPlane.rotation.x = -Math.PI/2; shadowPlane.receiveShadow = true; shadowPlane.position.y = 0.1;
+            scene.add(shadowPlane);
+            
+            dragPlane = new THREE.Mesh(new THREE.PlaneGeometry(5000, 5000), new THREE.MeshBasicMaterial({ visible: false }));
+            dragPlane.rotation.x = -Math.PI/2; scene.add(dragPlane);
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth/window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            setupInteraction();
+            animate();
+            
+            // Start
+            ui.setTab('kitchen', document.querySelector('.dock-tab.active'));
+            core.spawn('base_60');
+            setTimeout(() => document.getElementById('loader').style.opacity = 0, 800);
+            setTimeout(() => document.getElementById('loader').remove(), 1500);
+        }
+
         function animate() { requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); }
 
-        // --- START THE ENGINE (LAST LINE) ---
         init();
-
     </script>
 </body>
 </html>
