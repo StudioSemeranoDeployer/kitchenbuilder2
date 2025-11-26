@@ -2,185 +2,85 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Kitchen Studio 3D | Awwwards Edition</title>
+    <title>Kitchen Studio 3D | Pro</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="Next-gen WebGL Kitchen Configurator">
     
-    <!-- Fonts: Inter Tight per un look più moderno/tecnico -->
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;500;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
             --bg-color: #f4f2f0;
-            --accent: #ff5722; /* International Orange */
-            --glass: rgba(255, 255, 255, 0.75);
-            --glass-border: 1px solid rgba(255, 255, 255, 0.3);
+            --accent: #ff5722;
+            --glass: rgba(255, 255, 255, 0.85);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.5);
             --blur: blur(20px);
-            --shadow: 0 20px 50px rgba(0,0,0,0.08);
             --text-main: #1a1a1a;
-            --radius: 18px;
             --ease: cubic-bezier(0.23, 1, 0.32, 1);
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-        body { 
-            margin: 0; overflow: hidden; 
-            font-family: 'Inter Tight', sans-serif; 
-            background: var(--bg-color); 
-            color: var(--text-main);
-            height: 100vh; width: 100vw;
-        }
-
-        /* --- UI LAYER --- */
+        body { margin: 0; overflow: hidden; font-family: 'Inter Tight', sans-serif; background: var(--bg-color); color: var(--text-main); height: 100vh; width: 100vw; user-select: none; -webkit-user-select: none; }
         #ui-layer { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
 
         /* HEADER */
-        header {
-            position: absolute; top: 0; left: 0; width: 100%;
-            padding: 24px 32px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        
-        .logo { 
-            font-size: 20px; font-weight: 700; letter-spacing: -0.5px; 
-            display: flex; align-items: center; gap: 8px; pointer-events: auto;
-        }
-        .logo span { opacity: 0.4; font-weight: 300; }
-        .badge {
-            font-size: 9px; background: var(--text-main); color: white; 
-            padding: 3px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase;
-        }
+        header { position: absolute; top: 0; left: 0; width: 100%; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 8px; pointer-events: auto; }
+        .badge { font-size: 9px; background: #000; color: white; padding: 3px 6px; border-radius: 4px; font-weight: 700; }
+        .actions { display: flex; gap: 10px; pointer-events: auto; }
+        .icon-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--glass); backdrop-filter: var(--blur); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.05); font-size: 16px; border: var(--glass-border); }
+        .icon-btn:active { transform: scale(0.9); }
 
-        .actions { display: flex; gap: 12px; pointer-events: auto; }
-        .icon-btn {
-            width: 44px; height: 44px; border-radius: 50%;
-            border: var(--glass-border); background: var(--glass);
-            backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: transform 0.4s var(--ease), background 0.2s;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05); font-size: 18px;
-        }
-        .icon-btn:hover { transform: scale(1.05); background: white; }
-        .icon-btn:active { transform: scale(0.95); }
-
-        /* DOCK (Bottom) */
-        #dock-wrapper {
-            position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
-            display: flex; flex-direction: column; align-items: center; gap: 12px;
-            pointer-events: none; width: 90%; max-width: 800px;
-        }
-
-        .dock {
-            pointer-events: auto;
-            background: rgba(20, 20, 20, 0.85); /* Dark Theme Dock */
-            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-            padding: 6px; border-radius: 24px;
-            display: flex; gap: 4px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .dock-tab {
-            padding: 10px 20px; border-radius: 18px;
-            color: rgba(255,255,255,0.5); cursor: pointer;
-            font-size: 13px; font-weight: 500; letter-spacing: 0.3px;
-            transition: all 0.3s var(--ease);
-            display: flex; align-items: center; gap: 8px;
-        }
+        /* DOCK */
+        #dock-wrapper { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 12px; pointer-events: none; width: 90%; max-width: 800px; }
+        .dock { pointer-events: auto; background: rgba(20, 20, 20, 0.9); backdrop-filter: blur(25px); padding: 6px; border-radius: 24px; display: flex; gap: 4px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        .dock-tab { padding: 10px 20px; border-radius: 18px; color: rgba(255,255,255,0.6); cursor: pointer; font-size: 13px; font-weight: 500; transition: 0.3s var(--ease); }
         .dock-tab:hover { color: white; background: rgba(255,255,255,0.1); }
-        .dock-tab.active { background: white; color: black; font-weight: 600; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(255,255,255,0.2); }
+        .dock-tab.active { background: white; color: black; font-weight: 700; transform: translateY(-2px); }
 
-        /* CARDS (Submenu) */
-        #cards-container {
-            pointer-events: auto;
-            display: flex; gap: 10px; overflow-x: auto; padding: 10px;
-            background: var(--glass); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-            border-radius: 24px; border: var(--glass-border);
-            box-shadow: var(--shadow);
-            max-width: 100%; scrollbar-width: none;
-            opacity: 0; transform: translateY(20px); transition: 0.4s var(--ease);
-        }
+        /* CARDS */
+        #cards-container { pointer-events: auto; display: flex; gap: 8px; overflow-x: auto; padding: 10px; background: var(--glass); backdrop-filter: var(--blur); border-radius: 24px; border: var(--glass-border); box-shadow: 0 10px 40px rgba(0,0,0,0.1); max-width: 100%; scrollbar-width: none; opacity: 0; transform: translateY(20px); transition: 0.4s var(--ease); }
         #cards-container.visible { opacity: 1; transform: translateY(0); }
-
-        .card {
-            min-width: 80px; height: 90px;
-            background: white; border-radius: 16px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
-            cursor: pointer; transition: 0.3s var(--ease); border: 1px solid transparent;
-        }
-        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .card { min-width: 75px; height: 85px; background: white; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; cursor: pointer; transition: 0.2s; border: 1px solid transparent; }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
         .card:active { transform: scale(0.95); }
-        .card-icon { font-size: 28px; line-height: 1; }
-        .card-label { font-size: 11px; font-weight: 600; color: #555; }
-        
+        .card-icon { font-size: 24px; }
+        .card-label { font-size: 10px; font-weight: 600; color: #444; }
         .card.action-delete { color: #e74c3c; background: #fdedec; }
 
         /* LOADER */
-        #loader {
-            position: fixed; inset: 0; z-index: 9999;
-            background: #e6e4e2;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: opacity 0.8s var(--ease);
-        }
-        .loader-bar { width: 120px; height: 2px; background: rgba(0,0,0,0.1); border-radius: 2px; overflow: hidden; margin-top: 20px; }
-        .loader-fill { width: 0%; height: 100%; background: var(--text-main); transition: width 0.5s; }
-
-        /* NOTIFICATIONS */
-        .toast {
-            position: absolute; top: 100px; left: 50%; transform: translateX(-50%) translateY(20px);
-            background: #111; color: white; padding: 10px 24px; border-radius: 50px;
-            font-size: 13px; font-weight: 500; opacity: 0; transition: 0.4s var(--ease); pointer-events: none;
-        }
-        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-        /* CANVAS */
-        canvas { outline: none; }
+        #loader { position: fixed; inset: 0; z-index: 9999; background: #f4f2f0; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s; }
+        .loader-spin { width: 40px; height: 40px; border: 4px solid #ddd; border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
     
-    <!-- Three.js Import Map -->
     <script type="importmap">
-        { "imports": { 
-            "three": "https://unpkg.com/three@0.160.0/build/three.module.js", 
-            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" 
-        }}
+        { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
     </script>
 </head>
 <body>
 
-    <!-- LOADER -->
     <div id="loader">
-        <h1 style="font-size:24px; letter-spacing:-1px; margin:0;">Kitchen Studio<span style="color:var(--accent)">.</span></h1>
-        <div class="loader-bar"><div class="loader-fill" id="loader-fill"></div></div>
+        <div class="loader-spin"></div>
+        <p style="margin-top:20px; font-size:12px; font-weight:600; opacity:0.6;">LOADING STUDIO</p>
     </div>
 
-    <!-- UI -->
     <div id="ui-layer">
         <header>
-            <div class="logo">
-                <div style="width:20px; height:20px; background:var(--accent); border-radius:6px;"></div>
-                GECO<span>.srl</span> <div class="badge">PRO</div>
-            </div>
+            <div class="logo"><div style="width:16px; height:16px; background:var(--accent); border-radius:4px;"></div>GECO<span>.srl</span><div class="badge">V5</div></div>
             <div class="actions">
-                <div class="icon-btn" onclick="app.undo()" title="Undo">↶</div>
-                <div class="icon-btn" onclick="app.redo()" title="Redo">↷</div>
-                <div class="icon-btn" onclick="app.toggleView()" title="2D/3D Mode">📐</div>
-                <div class="icon-btn" onclick="app.screenshot()" title="Render 4K">📷</div>
+                <div class="icon-btn" onclick="app.toggleView()">📐</div>
+                <div class="icon-btn" onclick="app.screenshot()">📷</div>
             </div>
         </header>
 
-        <div class="toast" id="toast">Project Saved</div>
-
         <div id="dock-wrapper">
             <div id="cards-container"></div>
-            
             <div class="dock">
-                <div class="dock-tab active" onclick="ui.setTab('kitchen', this)">Kitchen</div>
-                <div class="dock-tab" onclick="ui.setTab('appliances', this)">Appliance</div>
-                <div class="dock-tab" onclick="ui.setTab('materials', this)">Material</div>
-                <div class="dock-tab" onclick="ui.setTab('room', this)">Room</div>
-                <div class="dock-tab" onclick="ui.setTab('save', this)">System</div>
+                <div class="dock-tab active" onclick="ui.setTab('kitchen', this)">Moduli</div>
+                <div class="dock-tab" onclick="ui.setTab('appliances', this)">Elettro</div>
+                <div class="dock-tab" onclick="ui.setTab('materials', this)">Finiture</div>
+                <div class="dock-tab" onclick="ui.setTab('save', this)">File</div>
             </div>
         </div>
     </div>
@@ -189,32 +89,16 @@
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-        import { RectAreaLightUniformsLib } from 'three/addons/lights/RectAreaLightUniformsLib.js';
 
-        // --- CONFIGURATION ---
-        const CONFIG = {
-            snap: 10,
-            gridSize: 3000,
-            bgColor: 0xe6e4e2,
-            shadowMapSize: 2048
-        };
-
-        // --- STATE ---
-        const state = {
-            modules: [],
-            selected: null,
-            dragging: false,
-            history: [],
-            hIndex: -1,
-            is2D: false,
-            color: 'white_matte' // Default finish
-        };
-
-        // --- THREE VARIABLES ---
+        // --- CONFIG ---
+        const CONFIG = { snap: 10, bgColor: 0xf4f2f0 };
+        const state = { modules: [], selected: null, dragging: false, history: [], color: 'white_matte' };
+        
         let scene, camera, renderer, controls, raycaster;
-        let mainGroup, labelsGroup, dragPlane, shadowPlane;
-        let pmremGenerator, envMap;
-        let textureCache = {};
+        let mainGroup, labelsGroup, dragPlane;
+        
+        // --- SAFE UTILS ---
+        const generateID = () => 'id_' + Math.random().toString(36).substr(2, 9);
 
         // --- PUBLIC API ---
         window.app = {
@@ -223,181 +107,122 @@
             delete: () => core.delete(),
             rotate: () => core.rotate(),
             duplicate: () => core.duplicate(),
-            undo: () => history.undo(),
-            redo: () => history.redo(),
             toggleView: () => core.toggleView(),
             screenshot: () => core.renderHQ(),
             reset: () => core.reset()
         };
 
-        // --- INITIALIZATION ---
         init();
 
         function init() {
-            // 1. RENDERER (High Quality)
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Retina support
-            renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Softer shadows
-            renderer.toneMapping = THREE.ACESFilmicToneMapping; // Cinematic colors
-            renderer.toneMappingExposure = 1.0;
-            document.body.appendChild(renderer.domElement);
+            try {
+                // RENDERER
+                renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); // Limita pixel ratio per performance
+                renderer.shadowMap.enabled = true;
+                renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                renderer.toneMapping = THREE.ACESFilmicToneMapping;
+                document.body.appendChild(renderer.domElement);
 
-            // 2. SCENE & LIGHTING (The Awwwards Secret)
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(CONFIG.bgColor);
-            scene.fog = new THREE.Fog(CONFIG.bgColor, 500, 3000); // Depth cueing
+                // SCENE
+                scene = new THREE.Scene();
+                scene.background = new THREE.Color(CONFIG.bgColor);
+                scene.fog = new THREE.Fog(CONFIG.bgColor, 500, 3000);
 
-            // Environment Map (IBL) - This creates the realistic reflections
-            pmremGenerator = new THREE.PMREMGenerator(renderer);
-            pmremGenerator.compileEquirectangularShader();
-            const roomEnv = new RoomEnvironment();
-            envMap = pmremGenerator.fromScene(roomEnv, 0.04).texture;
-            scene.environment = envMap; // Applies to all PBR materials
-            // scene.background = null; // Keep solid color background
+                // ENVIRONMENT (Light & Reflections)
+                const pmremGenerator = new THREE.PMREMGenerator(renderer);
+                pmremGenerator.compileEquirectangularShader();
+                scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+                pmremGenerator.dispose(); // IMPORTANTE: Pulisce memoria
 
-            // Direct Light for Shadows
-            const sun = new THREE.DirectionalLight(0xfff0e6, 2.0);
-            sun.position.set(200, 500, 300);
-            sun.castShadow = true;
-            sun.shadow.mapSize.set(CONFIG.shadowMapSize, CONFIG.shadowMapSize);
-            sun.shadow.bias = -0.0001;
-            sun.shadow.normalBias = 0.02; // Fix striations
-            scene.add(sun);
+                // LIGHTS
+                const sun = new THREE.DirectionalLight(0xfff0e6, 1.5);
+                sun.position.set(200, 500, 300);
+                sun.castShadow = true;
+                sun.shadow.mapSize.set(1024, 1024);
+                sun.shadow.normalBias = 0.04;
+                scene.add(sun);
+                scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
-            // Fill Light
-            const fill = new THREE.HemisphereLight(0xffffff, 0xddeeff, 0.4);
-            scene.add(fill);
+                // CAMERA
+                camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 10, 5000);
+                camera.position.set(350, 250, 350);
+                camera.lookAt(0, 50, 0);
 
-            // 3. CAMERA
-            const asp = window.innerWidth / window.innerHeight;
-            // Use Perspective for Showcase feel, Ortho is too CAD-like for Awwwards
-            camera = new THREE.PerspectiveCamera(45, asp, 10, 5000);
-            camera.position.set(400, 300, 400);
-            camera.lookAt(0, 50, 0);
+                // GROUPS
+                mainGroup = new THREE.Group(); scene.add(mainGroup);
+                labelsGroup = new THREE.Group(); scene.add(labelsGroup);
+                
+                // SHADOW CATCHER
+                const shadowPlane = new THREE.Mesh(new THREE.PlaneGeometry(3000, 3000), new THREE.ShadowMaterial({ opacity: 0.1, color: 0x000000 }));
+                shadowPlane.rotation.x = -Math.PI / 2; shadowPlane.receiveShadow = true; shadowPlane.position.y = 0.1;
+                scene.add(shadowPlane);
 
-            // 4. GROUPS
-            mainGroup = new THREE.Group(); scene.add(mainGroup);
-            labelsGroup = new THREE.Group(); scene.add(labelsGroup);
-            
-            // Floor (Shadow Catcher only)
-            const floorGeo = new THREE.PlaneGeometry(5000, 5000);
-            const floorMat = new THREE.ShadowMaterial({ opacity: 0.15, color: 0x000000 });
-            shadowPlane = new THREE.Mesh(floorGeo, floorMat);
-            shadowPlane.rotation.x = -Math.PI / 2;
-            shadowPlane.receiveShadow = true;
-            shadowPlane.position.y = 0.1;
-            scene.add(shadowPlane);
+                // DRAG PLANE
+                dragPlane = new THREE.Mesh(new THREE.PlaneGeometry(5000, 5000), new THREE.MeshBasicMaterial({ visible: false }));
+                dragPlane.rotation.x = -Math.PI / 2; scene.add(dragPlane);
 
-            // Drag Plane (Invisible)
-            dragPlane = new THREE.Mesh(new THREE.PlaneGeometry(10000, 10000), new THREE.MeshBasicMaterial({ visible: false }));
-            dragPlane.rotation.x = -Math.PI / 2;
-            scene.add(dragPlane);
+                // CONTROLS
+                controls = new OrbitControls(camera, renderer.domElement);
+                controls.enableDamping = true; controls.maxPolarAngle = Math.PI / 2 - 0.05;
 
-            // 5. CONTROLS
-            controls = new OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true; 
-            controls.dampingFactor = 0.05; // Silky smooth
-            controls.maxPolarAngle = Math.PI / 2 - 0.05; // Prevent going under floor
-            controls.minDistance = 50;
-            controls.maxDistance = 1200;
+                // EVENTS
+                raycaster = new THREE.Raycaster();
+                setupInteraction();
+                window.addEventListener('resize', onResize);
 
-            // 6. INTERACTION
-            raycaster = new THREE.Raycaster();
-            setupInteraction();
-            window.addEventListener('resize', onResize);
+                // START
+                animate();
+                ui.setTab('kitchen', document.querySelector('.dock-tab.active'));
+                core.spawn('base_60'); // Demo
+                
+                // Remove Loader
+                setTimeout(() => {
+                    const l = document.getElementById('loader');
+                    l.style.opacity = 0;
+                    setTimeout(() => l.remove(), 500);
+                }, 800);
 
-            // 7. STARTUP
-            animate();
-            
-            // Fake loading progress
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += Math.random() * 20;
-                if(progress > 100) progress = 100;
-                document.getElementById('loader-fill').style.width = progress + '%';
-                if(progress === 100) {
-                    clearInterval(interval);
-                    setTimeout(() => {
-                        document.getElementById('loader').style.opacity = 0;
-                        setTimeout(() => document.getElementById('loader').remove(), 800);
-                        // Intro Animation
-                        moveCameraTo({x:250, y:200, z:250}, {x:0, y:40, z:0});
-                    }, 500);
-                }
-            }, 100);
-
-            // Init UI
-            ui.setTab('kitchen', document.querySelector('.dock-tab.active'));
-            
-            // Load Demo
-            core.spawn('base_60');
+            } catch (e) {
+                alert("Errore WebGL: " + e.message);
+            }
         }
 
         // --- CORE LOGIC ---
         const core = {
             defs: {
-                // Modules
                 base_60: {w:60, h:86, d:60, type:'cab'},
                 base_90: {w:90, h:86, d:60, type:'cab'},
                 drawers: {w:60, h:86, d:60, type:'drawers'},
                 sink:    {w:90, h:86, d:60, type:'sink'},
                 oven:    {w:60, h:86, d:60, type:'oven'},
-                
                 wall_60: {w:60, h:72, d:35, y:144, type:'cab_up'},
-                wall_90: {w:90, h:72, d:35, y:144, type:'cab_up'},
                 hood:    {w:90, h:60, d:35, y:144, type:'hood'},
-                
                 tall_60: {w:60, h:216, d:60, type:'tall'},
                 fridge:  {w:60, h:216, d:60, type:'fridge'},
-                
-                island_back: {w:90, h:86, d:60, type:'island_back'}, // Retro isola finito
-                
-                lamp:    {w:30, h:100, d:30, y:150, type:'lamp'},
-                plant:   {w:40, h:60, d:40, y:0, type:'plant'} // New!
+                lamp:    {w:30, h:120, d:30, y:0, type:'lamp'}
             },
 
             spawn: (t) => {
                 const def = core.defs[t] || core.defs['base_60'];
-                const data = {
-                    id: crypto.randomUUID(), t, 
-                    x:0, y:def.y||0, z:0, rot:0,
-                    color: state.color, ...def
-                };
+                // ID GENERATOR FIXATO
+                const data = { id: generateID(), t, x:0, y:def.y||0, z:0, rot:0, color: state.color, ...def };
                 
-                // Smart offset to avoid stacking
-                if(state.modules.length > 0) {
-                    data.x = state.modules[state.modules.length-1].x + 70;
-                }
+                if(state.modules.length > 0) data.x = state.modules[state.modules.length-1].x + 70;
 
                 builder.build(data);
                 state.modules.push(data);
                 core.select(data);
-                history.save();
             },
 
             select: (data) => {
                 state.selected = data;
                 labelsGroup.clear();
-                
-                // Remove selection effects from others
-                mainGroup.children.forEach(c => {
-                    // Reset emission/color logic if we had highlighted selection
-                });
-
                 if(data && data.mesh) {
-                    // Add modern selection box (just corners or subtle glow)
                     const box = new THREE.BoxHelper(data.mesh, 0xff5722);
                     labelsGroup.add(box);
-                    
-                    // Floating Label
-                    const label = builder.createLabel(`${data.w} cm`);
-                    label.position.set(data.x, data.y + data.h + 15, data.z);
-                    labelsGroup.add(label);
                 }
-                
-                // Refresh UI Context
                 ui.refresh();
             },
 
@@ -407,26 +232,23 @@
                 builder.dispose(state.selected.mesh);
                 state.modules = state.modules.filter(m => m !== state.selected);
                 core.select(null);
-                history.save();
             },
 
             duplicate: () => {
                 if(!state.selected) return;
                 const s = state.selected;
-                core.spawn(s.t); // Spawn handles offset
-                // More complex: copy exact props
-                const last = state.modules[state.modules.length-1];
-                last.rot = s.rot; 
-                last.x = s.x + 20; last.z = s.z + 20;
-                builder.updatePos(last);
+                const def = core.defs[s.t];
+                const data = { ...s, id: generateID(), x: s.x+20, z: s.z+20, mesh: null }; // Reset mesh null
+                builder.build(data);
+                state.modules.push(data);
+                core.select(data);
             },
 
             rotate: () => {
                 if(!state.selected) return;
                 state.selected.rot += Math.PI / 2;
                 builder.updatePos(state.selected);
-                core.select(state.selected); // update box
-                history.save();
+                core.select(state.selected);
             },
 
             setColor: (c) => {
@@ -434,455 +256,194 @@
                 if(state.selected) {
                     state.selected.color = c;
                     builder.build(state.selected);
-                    history.save();
                 }
             },
 
             toggleView: () => {
-                state.is2D = !state.is2D;
-                if(state.is2D) {
-                    moveCameraTo({x:0, y:800, z:0}, {x:0, y:0, z:0});
-                    camera.zoom = 1.0;
+                const isTop = camera.position.y > 600;
+                if(isTop) {
+                    camera.position.set(350, 250, 350);
+                    controls.target.set(0, 50, 0);
                 } else {
-                    moveCameraTo({x:300, y:250, z:300}, {x:0, y:50, z:0});
+                    camera.position.set(0, 800, 0);
+                    controls.target.set(0, 0, 0);
                 }
             },
             
             renderHQ: () => {
                 renderer.render(scene, camera);
-                const url = renderer.domElement.toDataURL('image/png');
                 const a = document.createElement('a');
-                a.download = 'Gecco_Studio_Render.png';
-                a.href = url; a.click();
+                a.download = 'Render.png';
+                a.href = renderer.domElement.toDataURL('image/png'); a.click();
             },
 
             reset: () => {
-                if(confirm('Clear all?')) {
+                if(confirm('Reset Project?')) {
                     state.modules.forEach(m => mainGroup.remove(m.mesh));
                     state.modules = [];
                     core.select(null);
-                    history.save();
                 }
             }
         };
 
-        // --- BUILDER (Materials & Geometry) ---
+        // --- BUILDER ---
         const builder = {
             materials: {},
-
             getMat: (id) => {
                 if(builder.materials[id]) return builder.materials[id];
-
-                // PBR SETUP
-                const pbr = (c, r=0.5, m=0, t=0) => new THREE.MeshPhysicalMaterial({
-                    color: c, roughness: r, metalness: m, transmission: t,
-                    envMapIntensity: 1.0, clearcoat: t > 0 ? 1 : 0
-                });
-
+                const pbr = (c, r=0.5, m=0) => new THREE.MeshPhysicalMaterial({ color:c, roughness:r, metalness:m });
                 let mat;
-                switch(id) {
-                    case 'white_matte': mat = pbr(0xffffff, 0.9, 0.0); break;
-                    case 'white_gloss': mat = pbr(0xffffff, 0.1, 0.0, 0.0); mat.clearcoat=1; break;
-                    case 'black_matte': mat = pbr(0x222222, 0.8, 0.0); break;
-                    case 'oak': mat = builder.createWoodTex(0xd2b48c); break;
-                    case 'walnut': mat = builder.createWoodTex(0x6e5242); break;
-                    case 'sage': mat = pbr(0x9caf88, 0.8, 0); break;
-                    case 'navy': mat = pbr(0x2c3e50, 0.8, 0); break;
-                    
-                    case 'steel': mat = pbr(0xcccccc, 0.3, 0.9); break;
-                    case 'glass': mat = pbr(0xffffff, 0.05, 0.0, 0.95); mat.ior=1.5; mat.thickness=2; break;
-                    case 'glass_black': mat = pbr(0x111111, 0.1, 0.5); break;
-                    default: mat = pbr(0xffffff, 0.5);
-                }
-                
+                if(id === 'white_matte') mat = pbr(0xffffff, 0.9);
+                else if(id === 'white_gloss') { mat = pbr(0xffffff, 0.1); mat.clearcoat=1; }
+                else if(id === 'black') mat = pbr(0x222222, 0.8);
+                else if(id === 'sage') mat = pbr(0x9caf88, 0.8);
+                else if(id === 'navy') mat = pbr(0x2c3e50, 0.8);
+                else if(id === 'wood') mat = builder.woodTex(0xd2b48c);
+                else if(id === 'steel') mat = pbr(0xcccccc, 0.3, 0.8);
+                else if(id === 'glass') { mat = pbr(0xffffff, 0, 0); mat.transmission=0.9; mat.opacity=0.3; mat.transparent=true; }
+                else mat = pbr(0xffffff, 0.5);
                 builder.materials[id] = mat;
                 return mat;
             },
-
-            createWoodTex: (colorHex) => {
-                const c = document.createElement('canvas'); c.width=512; c.height=512;
-                const ctx = c.getContext('2d');
-                ctx.fillStyle = '#' + new THREE.Color(colorHex).getHexString(); 
-                ctx.fillRect(0,0,512,512);
-                
-                // Noise
-                ctx.globalCompositeOperation = 'multiply';
-                ctx.globalAlpha = 0.15;
-                for(let i=0; i<100; i++) {
-                    ctx.beginPath();
-                    ctx.moveTo(Math.random()*512, 0);
-                    ctx.bezierCurveTo(Math.random()*512, 200, Math.random()*512, 400, Math.random()*512, 512);
-                    ctx.lineWidth = 1 + Math.random()*4;
-                    ctx.strokeStyle = '#3e2723';
-                    ctx.stroke();
-                }
-                
-                const tex = new THREE.CanvasTexture(c);
-                tex.colorSpace = THREE.SRGBColorSpace;
-                return new THREE.MeshPhysicalMaterial({ map: tex, roughness: 0.7, envMapIntensity:0.5 });
+            woodTex: (col) => {
+                const c = document.createElement('canvas'); c.width=256; c.height=256;
+                const x = c.getContext('2d'); x.fillStyle='#'+new THREE.Color(col).getHexString(); x.fillRect(0,0,256,256);
+                x.globalAlpha=0.1; for(let i=0;i<50;i++){ x.beginPath(); x.moveTo(0,Math.random()*256); x.bezierCurveTo(100,Math.random()*256,200,Math.random()*256,256,Math.random()*256); x.stroke(); }
+                return new THREE.MeshPhysicalMaterial({ map:new THREE.CanvasTexture(c), roughness:0.7 });
             },
-
             build: (data) => {
                 if(data.mesh) { mainGroup.remove(data.mesh); builder.dispose(data.mesh); }
-
-                const g = new THREE.Group();
-                g.userData = { isModule: true, id: data.id };
-
+                const g = new THREE.Group(); g.userData = { isModule: true, id: data.id };
                 const mat = builder.getMat(data.color);
                 const { w, h, d, type } = data;
-                
-                // CONSTANTS
-                const TOE = (['cab_up','hood','lamp','plant'].includes(type)) ? 0 : 10;
-                const BODY_H = h - TOE;
+                const toe = (['cab_up','hood','lamp'].includes(type)) ? 0 : 10;
+                const bodyH = h - toe;
 
-                // 1. KICK PLATE
-                if(TOE > 0) {
-                    const kick = new THREE.Mesh(new THREE.BoxGeometry(w-4, TOE, d-8), builder.getMat('black_matte'));
-                    kick.position.set(0, TOE/2, -4);
-                    g.add(kick);
+                if(toe > 0) {
+                    const kick = new THREE.Mesh(new THREE.BoxGeometry(w-4, toe, d-4), builder.getMat('black'));
+                    kick.position.set(0, toe/2, -2); g.add(kick);
                 }
 
-                // 2. CARCASS
-                if(type !== 'lamp' && type !== 'plant') {
-                    const body = new THREE.Mesh(new THREE.BoxGeometry(w, BODY_H, d), mat);
-                    body.position.set(0, TOE + BODY_H/2, 0);
+                if(type === 'lamp') {
+                     const pole = new THREE.Mesh(new THREE.CylinderGeometry(2,2,h), builder.getMat('black'));
+                     pole.position.y = h/2;
+                     const shade = new THREE.Mesh(new THREE.ConeGeometry(20, 20, 32, 1, true), builder.getMat('white_matte'));
+                     shade.position.y = h-10;
+                     const light = new THREE.PointLight(0xffaa00, 3, 100); light.position.y = h-15;
+                     g.add(pole, shade, light);
+                } else if (type === 'hood') {
+                    const box = new THREE.Mesh(new THREE.BoxGeometry(w, 40, d), builder.getMat('steel'));
+                    box.position.y = 20; g.add(box);
+                } else {
+                    const body = new THREE.Mesh(new THREE.BoxGeometry(w, bodyH, d), mat);
+                    body.position.set(0, toe + bodyH/2, 0);
                     body.castShadow = true; body.receiveShadow = true;
                     g.add(body);
-                }
-
-                // 3. FRONT/DOOR with GAP
-                const gap = 0.2;
-                
-                if(type === 'sink') {
-                    // Basin
-                    const basin = new THREE.Mesh(new THREE.BoxGeometry(w-10, 20, d-10), builder.getMat('steel'));
-                    basin.position.set(0, TOE + BODY_H, 0);
-                    // Tap
-                    const tapB = new THREE.Mesh(new THREE.CylinderGeometry(2,2,10), builder.getMat('steel'));
-                    tapB.position.set(0, TOE+BODY_H+5, -15);
-                    const tapC = new THREE.Mesh(new THREE.TorusGeometry(8, 1.5, 16, 32, Math.PI));
-                    tapC.position.set(0, TOE+BODY_H+13, -15);
-                    g.add(basin, tapB, tapC);
-                } 
-                else if (type === 'hood') {
-                    const chimney = new THREE.Mesh(new THREE.BoxGeometry(30, h, 30), builder.getMat('steel'));
-                    chimney.position.set(0, h/2, 0);
-                    const plate = new THREE.Mesh(new THREE.BoxGeometry(w, 5, d), builder.getMat('steel'));
-                    plate.position.set(0, 2.5, 0);
-                    g.add(chimney, plate);
-                }
-                else if (type === 'lamp') {
-                     const wire = new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.3, h), builder.getMat('black_matte'));
-                     wire.position.y = h/2;
-                     const shade = new THREE.Mesh(new THREE.SphereGeometry(15, 32, 32, 0, Math.PI * 2, 0, Math.PI/2), builder.getMat('white_matte'));
-                     shade.position.y = 15;
-                     
-                     // REAL LIGHT
-                     const bulb = new THREE.PointLight(0xffaa00, 5, 200);
-                     bulb.position.y = 10;
-                     bulb.castShadow = true;
-                     bulb.shadow.bias = -0.0001;
-                     
-                     g.add(wire, shade, bulb);
-                }
-                else if (type === 'plant') {
-                    const pot = new THREE.Mesh(new THREE.CylinderGeometry(15, 12, 30), builder.getMat('white_gloss'));
-                    pot.position.y = 15; pot.castShadow=true;
-                    const stem = new THREE.Mesh(new THREE.CylinderGeometry(2,2,40), builder.getMat('sage'));
-                    stem.position.y = 40;
-                    g.add(pot, stem);
-                    // Leaves would be particles or sprites for low poly
-                }
-                else {
-                    // Standard Door/Drawers
-                    const doorThick = 2;
-                    const isDrawers = type === 'drawers';
-                    const parts = isDrawers ? 3 : 1;
-                    const pHeight = (BODY_H - (parts-1)*gap) / parts;
                     
-                    for(let i=0; i<parts; i++) {
-                        const panel = new THREE.Mesh(new THREE.BoxGeometry(w-gap, pHeight-gap, doorThick), mat);
-                        // Position from top down logic
-                        const yPos = TOE + BODY_H - (pHeight/2) - (i * (pHeight+gap));
-                        panel.position.set(0, yPos, d/2 + doorThick/2);
-                        panel.castShadow = true; panel.receiveShadow = true;
-                        
-                        // Handle (J-Pull or Slim)
-                        const handle = new THREE.Mesh(new THREE.BoxGeometry(w/2, 1, 1), builder.getMat('black_matte'));
-                        handle.position.set(0, pHeight/2 - 2, 1); // Top edge
-                        panel.add(handle);
-                        
-                        g.add(panel);
-                    }
+                    // Door Detail (Procedural)
+                    const door = new THREE.Mesh(new THREE.BoxGeometry(w-0.5, bodyH-0.5, 2), mat);
+                    door.position.set(0, toe + bodyH/2, d/2+1); door.castShadow=true;
+                    const handle = new THREE.Mesh(new THREE.BoxGeometry(w/3, 1, 2), builder.getMat('black'));
+                    handle.position.set(0, bodyH/2-5, 2);
+                    door.add(handle);
+                    g.add(door);
                 }
-
+                
                 g.position.set(data.x, data.y, data.z);
                 g.rotation.y = data.rot;
-                
                 mainGroup.add(g);
                 data.mesh = g;
             },
-
-            updatePos: (data) => {
-                data.mesh.position.set(data.x, data.y, data.z);
-                data.mesh.rotation.y = data.rot;
-            },
-
-            createLabel: (text) => {
-                const cv = document.createElement('canvas'); cv.width=256; cv.height=128;
-                const ctx = cv.getContext('2d');
-                ctx.fillStyle = '#111'; 
-                // Rounded rect bg
-                ctx.roundRect(64, 20, 128, 60, 30); ctx.fill();
-                ctx.fillStyle = '#fff'; ctx.font = 'bold 32px "Inter Tight"'; ctx.textAlign = 'center';
-                ctx.fillText(text, 128, 60);
-                
-                const tex = new THREE.CanvasTexture(cv);
-                const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent:true }));
-                sprite.scale.set(40, 20, 1);
-                return sprite;
-            },
-
-            dispose: (obj) => {
-                obj.traverse(c => {
-                    if(c.geometry) c.geometry.dispose();
-                    if(c.material) {
-                        if(Array.isArray(c.material)) c.material.forEach(m=>m.dispose());
-                        else c.material.dispose();
-                    }
-                });
-            }
+            updatePos: (d) => { d.mesh.position.set(d.x, d.y, d.z); d.mesh.rotation.y = d.rot; },
+            dispose: (o) => o.traverse(c => { if(c.geometry)c.geometry.dispose(); })
         };
 
         // --- INTERACTION ---
         function setupInteraction() {
-            let planeIntersect = new THREE.Vector3();
             let offset = new THREE.Vector3();
-
             renderer.domElement.addEventListener('pointerdown', e => {
-                if(state.is2D) return;
-                
                 const hits = getIntersect(e, mainGroup.children);
                 if(hits.length > 0) {
-                    // Traverse up
                     let obj = hits[0].object;
                     while(obj.parent && obj.parent !== mainGroup) obj = obj.parent;
-                    
                     if(obj.userData.isModule) {
-                        state.dragging = true;
-                        controls.enabled = false;
+                        state.dragging = true; controls.enabled = false;
                         const data = state.modules.find(m => m.id === obj.userData.id);
                         core.select(data);
-                        
                         const planeHit = getIntersect(e, [dragPlane])[0];
                         if(planeHit) offset.copy(planeHit.point).sub(obj.position);
                     }
                 } else {
                     const bgHit = getIntersect(e, [dragPlane]);
-                    if(bgHit.length > 0 && !state.dragging) core.select(null);
+                    if(bgHit.length>0 && !state.dragging) core.select(null);
                 }
             });
-
             renderer.domElement.addEventListener('pointermove', e => {
                 if(!state.dragging || !state.selected) return;
-                
                 const hit = getIntersect(e, [dragPlane])[0];
                 if(hit) {
-                    let tx = hit.point.x - offset.x;
-                    let tz = hit.point.z - offset.z;
-
-                    // Magnetic Snapping
+                    let tx = hit.point.x - offset.x, tz = hit.point.z - offset.z;
+                    // SNAPPING
                     const s = state.selected;
-                    const snapD = CONFIG.snap;
-                    
                     state.modules.forEach(other => {
                         if(other === s) return;
-                        const dx = tx - other.x;
-                        const dz = tz - other.z;
-                        const distW = (s.w/2 + other.w/2);
-                        
-                        // Snap Side
-                        if(Math.abs(dz) < 10) {
-                            if(Math.abs(dx - distW) < 15) { tx = other.x + distW; tz = other.z; }
-                            else if(Math.abs(dx + distW) < 15) { tx = other.x - distW; tz = other.z; }
+                        const dx = tx - other.x, dz = tz - other.z;
+                        if(Math.abs(dz) < 10 && Math.abs(Math.abs(dx) - (s.w/2 + other.w/2)) < 15) {
+                            tx = other.x + (dx > 0 ? (s.w/2 + other.w/2) : -(s.w/2 + other.w/2));
+                            tz = other.z;
                         }
                     });
-
                     s.x = tx; s.z = tz;
                     builder.updatePos(s);
-                    core.select(s); // Update Label
+                    core.select(s);
                 }
             });
-
-            renderer.domElement.addEventListener('pointerup', () => {
-                if(state.dragging) {
-                    state.dragging = false;
-                    controls.enabled = true;
-                    history.save();
-                }
-            });
+            renderer.domElement.addEventListener('pointerup', () => { state.dragging = false; controls.enabled = true; });
         }
-
         function getIntersect(e, list) {
             const r = renderer.domElement.getBoundingClientRect();
-            const x = ((e.clientX - r.left) / r.width) * 2 - 1;
-            const y = -((e.clientY - r.top) / r.height) * 2 + 1;
-            raycaster.setFromCamera({x,y}, camera);
+            raycaster.setFromCamera({ x: ((e.clientX - r.left)/r.width)*2-1, y: -((e.clientY - r.top)/r.height)*2+1 }, camera);
             return raycaster.intersectObjects(list, true);
         }
 
-        // --- UI LOGIC ---
+        // --- UI ---
         const ui = {
             menus: {
-                kitchen: [
-                    {n:'Base 60', i:'◻️', a:()=>app.spawn('base_60')},
-                    {n:'Base 90', i:'▭', a:()=>app.spawn('base_90')},
-                    {n:'Drawers', i:'☰', a:()=>app.spawn('drawers')},
-                    {n:'Sink', i:'🚰', a:()=>app.spawn('sink')},
-                    {n:'Wall 60', i:'▫️', a:()=>app.spawn('wall_60')},
-                    {n:'Wall 90', i:'▫️', a:()=>app.spawn('wall_90')},
-                    {n:'Tall', i:'▮', a:()=>app.spawn('tall_60')},
-                    {n:'Island', i:'🍱', a:()=>app.spawn('island_back')}
-                ],
-                appliances: [
-                    {n:'Fridge', i:'❄️', a:()=>app.spawn('fridge')},
-                    {n:'Oven', i:'🍳', a:()=>app.spawn('oven')},
-                    {n:'Hood', i:'💨', a:()=>app.spawn('hood')}
-                ],
-                materials: [
-                    {n:'Matte White', i:'⚪', a:()=>app.color('white_matte')},
-                    {n:'Gloss White', i:'✨', a:()=>app.color('white_gloss')},
-                    {n:'Matte Black', i:'⚫', a:()=>app.color('black_matte')},
-                    {n:'Sage Green', i:'🟢', a:()=>app.color('sage')},
-                    {n:'Navy Blue', i:'🔵', a:()=>app.color('navy')},
-                    {n:'Natural Oak', i:'🌳', a:()=>app.color('oak')},
-                    {n:'Walnut', i:'🌰', a:()=>app.color('walnut')}
-                ],
-                room: [
-                     {n:'Pendant', i:'💡', a:()=>app.spawn('lamp')},
-                     {n:'Plant', i:'🌿', a:()=>app.spawn('plant')}
-                ],
-                save: [
-                    {n:'Clear', i:'🗑', a:()=>app.reset()},
-                    {n:'Export', i:'💾', a:()=>alert('JSON copied to console (Demo)')}
-                ]
+                kitchen: [ {n:'Base 60',i:'◻️',a:()=>app.spawn('base_60')}, {n:'Base 90',i:'▭',a:()=>app.spawn('base_90')}, {n:'Sink',i:'🚰',a:()=>app.spawn('sink')}, {n:'Tall',i:'▮',a:()=>app.spawn('tall_60')}, {n:'Wall',i:'▫️',a:()=>app.spawn('wall_60')} ],
+                appliances: [ {n:'Fridge',i:'❄️',a:()=>app.spawn('fridge')}, {n:'Hood',i:'💨',a:()=>app.spawn('hood')}, {n:'Oven',i:'🍳',a:()=>app.spawn('oven')} ],
+                materials: [ {n:'White',i:'⚪',a:()=>app.color('white_matte')}, {n:'Gloss',i:'✨',a:()=>app.color('white_gloss')}, {n:'Sage',i:'🟢',a:()=>app.color('sage')}, {n:'Navy',i:'🔵',a:()=>app.color('navy')}, {n:'Wood',i:'🌳',a:()=>app.color('wood')} ],
+                save: [ {n:'Clear',i:'🗑',a:()=>app.reset()} ]
             },
-
             currentCat: null,
-
             setTab: (cat, el) => {
                 ui.currentCat = cat;
                 document.querySelectorAll('.dock-tab').forEach(e=>e.classList.remove('active'));
                 el.classList.add('active');
                 ui.renderCards(cat);
             },
-            
-            refresh: () => {
-                 // Re-render current menu to show/hide context buttons
-                 if(ui.currentCat) ui.renderCards(ui.currentCat);
-            },
-
+            refresh: () => { if(ui.currentCat) ui.renderCards(ui.currentCat); },
             renderCards: (cat) => {
                 const con = document.getElementById('cards-container');
                 con.classList.remove('visible');
-                
                 setTimeout(() => {
                     con.innerHTML = '';
-                    
-                    // Context Buttons
                     if(state.selected && cat !== 'save') {
-                         [{n:'Rotate',i:'↻',a:app.rotate}, {n:'Clone',i:'📑',a:app.duplicate}, {n:'Delete',i:'✕',a:app.delete, cls:'action-delete'}]
-                         .forEach(b => ui.addCard(con, b));
-                         const div = document.createElement('div');
-                         div.style.borderRight='1px solid rgba(0,0,0,0.1)'; div.style.margin='0 5px';
-                         con.appendChild(div);
+                         [{n:'Rotate',i:'↻',a:app.rotate}, {n:'Clone',i:'📑',a:app.duplicate}, {n:'Delete',i:'✕',a:app.delete, cls:'action-delete'}].forEach(b => ui.addCard(con, b));
+                         const div = document.createElement('div'); div.style.borderRight='1px solid rgba(0,0,0,0.1)'; div.style.margin='0 5px'; con.appendChild(div);
                     }
-
-                    // Main Buttons
-                    (ui.menus[cat]||[]).forEach(item => ui.addCard(con, item));
+                    (ui.menus[cat]||[]).forEach(i => ui.addCard(con, i));
                     con.classList.add('visible');
                 }, 200);
             },
-
-            addCard: (parent, item) => {
-                const c = document.createElement('div');
-                c.className = `card ${item.cls||''}`;
-                c.innerHTML = `<div class="card-icon">${item.i}</div><div class="card-label">${item.n}</div>`;
-                c.onclick = item.a;
-                parent.appendChild(c);
+            addCard: (p, i) => {
+                const c = document.createElement('div'); c.className = `card ${i.cls||''}`;
+                c.innerHTML = `<div class="card-icon">${i.i}</div><div class="card-label">${i.n}</div>`;
+                c.onclick = i.a; p.appendChild(c);
             }
         };
 
-        const history = {
-            save: () => {
-                // Simplified history
-                if(state.hIndex < state.history.length-1) state.history = state.history.slice(0, state.hIndex+1);
-                state.history.push(JSON.stringify(state.modules.map(m=>({id:m.id,t:m.t,x:m.x,y:m.y,z:m.z,rot:m.rot,color:m.color}))));
-                state.hIndex++;
-                showToast("Autosaved");
-            },
-            undo: () => {
-                if(state.hIndex > 0) {
-                    state.hIndex--;
-                    loadState(state.history[state.hIndex]);
-                }
-            },
-            redo: () => {
-                if(state.hIndex < state.history.length-1) {
-                    state.hIndex++;
-                    loadState(state.history[state.hIndex]);
-                }
-            }
-        };
-
-        function loadState(json) {
-            const data = JSON.parse(json);
-            state.modules.forEach(m => mainGroup.remove(m.mesh));
-            state.modules = [];
-            core.select(null);
-            data.forEach(d => {
-                const def = core.defs[d.t];
-                const full = {...def, ...d};
-                builder.build(full);
-                state.modules.push(full);
-            });
-        }
-
-        // --- UTILS & ANIMATION ---
-        function moveCameraTo(pos, target) {
-            // Simple tween logic
-            const startPos = camera.position.clone();
-            const startTarget = controls.target.clone();
-            let t = 0;
-            const animateCam = () => {
-                t += 0.02;
-                if(t <= 1) {
-                    const ease = t < .5 ? 2 * t * t : -1 + (4 - 2 * t) * t; // EaseInOutQuad
-                    camera.position.lerpVectors(startPos, new THREE.Vector3(pos.x,pos.y,pos.z), ease);
-                    controls.target.lerpVectors(startTarget, new THREE.Vector3(target.x,target.y,target.z), ease);
-                    requestAnimationFrame(animateCam);
-                }
-            };
-            animateCam();
-        }
-
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            t.innerText = msg; t.classList.add('show');
-            setTimeout(()=>t.classList.remove('show'), 2000);
-        }
-
-        function onResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update();
-            renderer.render(scene, camera);
-        }
+        function onResize() { camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }
+        function animate() { requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); }
     </script>
 </body>
 </html>
