@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Kitchen Studio 3D | Pro</title>
+    <title>Kitchen Studio 3D | Awwwards Pro</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
     <!-- Fonts -->
@@ -62,12 +62,12 @@
 
     <div id="loader">
         <div class="loader-spin"></div>
-        <p style="margin-top:20px; font-size:12px; font-weight:600; opacity:0.6;">LOADING STUDIO</p>
+        <p style="margin-top:20px; font-size:12px; font-weight:600; opacity:0.6;">INITIALIZING ENGINE</p>
     </div>
 
     <div id="ui-layer">
         <header>
-            <div class="logo"><div style="width:16px; height:16px; background:var(--accent); border-radius:4px;"></div>GECO<span>.srl</span><div class="badge">V5</div></div>
+            <div class="logo"><div style="width:16px; height:16px; background:var(--accent); border-radius:4px;"></div>GECO<span>.srl</span><div class="badge">PRO</div></div>
             <div class="actions">
                 <div class="icon-btn" onclick="app.toggleView()">📐</div>
                 <div class="icon-btn" onclick="app.screenshot()">📷</div>
@@ -100,7 +100,7 @@
         // --- SAFE UTILS ---
         const generateID = () => 'id_' + Math.random().toString(36).substr(2, 9);
 
-        // --- PUBLIC API ---
+        // --- PUBLIC API EXPORT ---
         window.app = {
             spawn: (t) => core.spawn(t),
             color: (c) => core.setColor(c),
@@ -112,181 +112,7 @@
             reset: () => core.reset()
         };
 
-        init();
-
-        function init() {
-            try {
-                // RENDERER
-                renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
-                renderer.setSize(window.innerWidth, window.innerHeight);
-                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); // Limita pixel ratio per performance
-                renderer.shadowMap.enabled = true;
-                renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-                renderer.toneMapping = THREE.ACESFilmicToneMapping;
-                document.body.appendChild(renderer.domElement);
-
-                // SCENE
-                scene = new THREE.Scene();
-                scene.background = new THREE.Color(CONFIG.bgColor);
-                scene.fog = new THREE.Fog(CONFIG.bgColor, 500, 3000);
-
-                // ENVIRONMENT (Light & Reflections)
-                const pmremGenerator = new THREE.PMREMGenerator(renderer);
-                pmremGenerator.compileEquirectangularShader();
-                scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
-                pmremGenerator.dispose(); // IMPORTANTE: Pulisce memoria
-
-                // LIGHTS
-                const sun = new THREE.DirectionalLight(0xfff0e6, 1.5);
-                sun.position.set(200, 500, 300);
-                sun.castShadow = true;
-                sun.shadow.mapSize.set(1024, 1024);
-                sun.shadow.normalBias = 0.04;
-                scene.add(sun);
-                scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-
-                // CAMERA
-                camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 10, 5000);
-                camera.position.set(350, 250, 350);
-                camera.lookAt(0, 50, 0);
-
-                // GROUPS
-                mainGroup = new THREE.Group(); scene.add(mainGroup);
-                labelsGroup = new THREE.Group(); scene.add(labelsGroup);
-                
-                // SHADOW CATCHER
-                const shadowPlane = new THREE.Mesh(new THREE.PlaneGeometry(3000, 3000), new THREE.ShadowMaterial({ opacity: 0.1, color: 0x000000 }));
-                shadowPlane.rotation.x = -Math.PI / 2; shadowPlane.receiveShadow = true; shadowPlane.position.y = 0.1;
-                scene.add(shadowPlane);
-
-                // DRAG PLANE
-                dragPlane = new THREE.Mesh(new THREE.PlaneGeometry(5000, 5000), new THREE.MeshBasicMaterial({ visible: false }));
-                dragPlane.rotation.x = -Math.PI / 2; scene.add(dragPlane);
-
-                // CONTROLS
-                controls = new OrbitControls(camera, renderer.domElement);
-                controls.enableDamping = true; controls.maxPolarAngle = Math.PI / 2 - 0.05;
-
-                // EVENTS
-                raycaster = new THREE.Raycaster();
-                setupInteraction();
-                window.addEventListener('resize', onResize);
-
-                // START
-                animate();
-                ui.setTab('kitchen', document.querySelector('.dock-tab.active'));
-                core.spawn('base_60'); // Demo
-                
-                // Remove Loader
-                setTimeout(() => {
-                    const l = document.getElementById('loader');
-                    l.style.opacity = 0;
-                    setTimeout(() => l.remove(), 500);
-                }, 800);
-
-            } catch (e) {
-                alert("Errore WebGL: " + e.message);
-            }
-        }
-
-        // --- CORE LOGIC ---
-        const core = {
-            defs: {
-                base_60: {w:60, h:86, d:60, type:'cab'},
-                base_90: {w:90, h:86, d:60, type:'cab'},
-                drawers: {w:60, h:86, d:60, type:'drawers'},
-                sink:    {w:90, h:86, d:60, type:'sink'},
-                oven:    {w:60, h:86, d:60, type:'oven'},
-                wall_60: {w:60, h:72, d:35, y:144, type:'cab_up'},
-                hood:    {w:90, h:60, d:35, y:144, type:'hood'},
-                tall_60: {w:60, h:216, d:60, type:'tall'},
-                fridge:  {w:60, h:216, d:60, type:'fridge'},
-                lamp:    {w:30, h:120, d:30, y:0, type:'lamp'}
-            },
-
-            spawn: (t) => {
-                const def = core.defs[t] || core.defs['base_60'];
-                // ID GENERATOR FIXATO
-                const data = { id: generateID(), t, x:0, y:def.y||0, z:0, rot:0, color: state.color, ...def };
-                
-                if(state.modules.length > 0) data.x = state.modules[state.modules.length-1].x + 70;
-
-                builder.build(data);
-                state.modules.push(data);
-                core.select(data);
-            },
-
-            select: (data) => {
-                state.selected = data;
-                labelsGroup.clear();
-                if(data && data.mesh) {
-                    const box = new THREE.BoxHelper(data.mesh, 0xff5722);
-                    labelsGroup.add(box);
-                }
-                ui.refresh();
-            },
-
-            delete: () => {
-                if(!state.selected) return;
-                mainGroup.remove(state.selected.mesh);
-                builder.dispose(state.selected.mesh);
-                state.modules = state.modules.filter(m => m !== state.selected);
-                core.select(null);
-            },
-
-            duplicate: () => {
-                if(!state.selected) return;
-                const s = state.selected;
-                const def = core.defs[s.t];
-                const data = { ...s, id: generateID(), x: s.x+20, z: s.z+20, mesh: null }; // Reset mesh null
-                builder.build(data);
-                state.modules.push(data);
-                core.select(data);
-            },
-
-            rotate: () => {
-                if(!state.selected) return;
-                state.selected.rot += Math.PI / 2;
-                builder.updatePos(state.selected);
-                core.select(state.selected);
-            },
-
-            setColor: (c) => {
-                state.color = c;
-                if(state.selected) {
-                    state.selected.color = c;
-                    builder.build(state.selected);
-                }
-            },
-
-            toggleView: () => {
-                const isTop = camera.position.y > 600;
-                if(isTop) {
-                    camera.position.set(350, 250, 350);
-                    controls.target.set(0, 50, 0);
-                } else {
-                    camera.position.set(0, 800, 0);
-                    controls.target.set(0, 0, 0);
-                }
-            },
-            
-            renderHQ: () => {
-                renderer.render(scene, camera);
-                const a = document.createElement('a');
-                a.download = 'Render.png';
-                a.href = renderer.domElement.toDataURL('image/png'); a.click();
-            },
-
-            reset: () => {
-                if(confirm('Reset Project?')) {
-                    state.modules.forEach(m => mainGroup.remove(m.mesh));
-                    state.modules = [];
-                    core.select(null);
-                }
-            }
-        };
-
-        // --- BUILDER ---
+        // --- BUILDER (DEFINED FIRST) ---
         const builder = {
             materials: {},
             getMat: (id) => {
@@ -340,7 +166,6 @@
                     body.castShadow = true; body.receiveShadow = true;
                     g.add(body);
                     
-                    // Door Detail (Procedural)
                     const door = new THREE.Mesh(new THREE.BoxGeometry(w-0.5, bodyH-0.5, 2), mat);
                     door.position.set(0, toe + bodyH/2, d/2+1); door.castShadow=true;
                     const handle = new THREE.Mesh(new THREE.BoxGeometry(w/3, 1, 2), builder.getMat('black'));
@@ -357,6 +182,214 @@
             updatePos: (d) => { d.mesh.position.set(d.x, d.y, d.z); d.mesh.rotation.y = d.rot; },
             dispose: (o) => o.traverse(c => { if(c.geometry)c.geometry.dispose(); })
         };
+
+        // --- CORE LOGIC (DEFINED SECOND) ---
+        const core = {
+            defs: {
+                base_60: {w:60, h:86, d:60, type:'cab'},
+                base_90: {w:90, h:86, d:60, type:'cab'},
+                drawers: {w:60, h:86, d:60, type:'drawers'},
+                sink:    {w:90, h:86, d:60, type:'sink'},
+                oven:    {w:60, h:86, d:60, type:'oven'},
+                wall_60: {w:60, h:72, d:35, y:144, type:'cab_up'},
+                hood:    {w:90, h:60, d:35, y:144, type:'hood'},
+                tall_60: {w:60, h:216, d:60, type:'tall'},
+                fridge:  {w:60, h:216, d:60, type:'fridge'},
+                lamp:    {w:30, h:120, d:30, y:0, type:'lamp'}
+            },
+
+            spawn: (t) => {
+                const def = core.defs[t] || core.defs['base_60'];
+                const data = { id: generateID(), t, x:0, y:def.y||0, z:0, rot:0, color: state.color, ...def };
+                if(state.modules.length > 0) data.x = state.modules[state.modules.length-1].x + 70;
+                builder.build(data);
+                state.modules.push(data);
+                core.select(data);
+            },
+
+            select: (data) => {
+                state.selected = data;
+                labelsGroup.clear();
+                if(data && data.mesh) {
+                    const box = new THREE.BoxHelper(data.mesh, 0xff5722);
+                    labelsGroup.add(box);
+                }
+                ui.refresh();
+            },
+
+            delete: () => {
+                if(!state.selected) return;
+                mainGroup.remove(state.selected.mesh);
+                builder.dispose(state.selected.mesh);
+                state.modules = state.modules.filter(m => m !== state.selected);
+                core.select(null);
+            },
+
+            duplicate: () => {
+                if(!state.selected) return;
+                const s = state.selected;
+                const data = { ...s, id: generateID(), x: s.x+20, z: s.z+20, mesh: null }; 
+                builder.build(data);
+                state.modules.push(data);
+                core.select(data);
+            },
+
+            rotate: () => {
+                if(!state.selected) return;
+                state.selected.rot += Math.PI / 2;
+                builder.updatePos(state.selected);
+                core.select(state.selected);
+            },
+
+            setColor: (c) => {
+                state.color = c;
+                if(state.selected) {
+                    state.selected.color = c;
+                    builder.build(state.selected);
+                }
+            },
+
+            toggleView: () => {
+                const isTop = camera.position.y > 600;
+                if(isTop) {
+                    camera.position.set(350, 250, 350);
+                    controls.target.set(0, 50, 0);
+                } else {
+                    camera.position.set(0, 800, 0);
+                    controls.target.set(0, 0, 0);
+                }
+            },
+            
+            renderHQ: () => {
+                renderer.render(scene, camera);
+                const a = document.createElement('a');
+                a.download = 'Render.png';
+                a.href = renderer.domElement.toDataURL('image/png'); a.click();
+            },
+
+            reset: () => {
+                if(confirm('Reset Project?')) {
+                    state.modules.forEach(m => mainGroup.remove(m.mesh));
+                    state.modules = [];
+                    core.select(null);
+                }
+            }
+        };
+
+        // --- UI (DEFINED THIRD) ---
+        const ui = {
+            menus: {
+                kitchen: [ {n:'Base 60',i:'◻️',a:()=>app.spawn('base_60')}, {n:'Base 90',i:'▭',a:()=>app.spawn('base_90')}, {n:'Sink',i:'🚰',a:()=>app.spawn('sink')}, {n:'Tall',i:'▮',a:()=>app.spawn('tall_60')}, {n:'Wall',i:'▫️',a:()=>app.spawn('wall_60')} ],
+                appliances: [ {n:'Fridge',i:'❄️',a:()=>app.spawn('fridge')}, {n:'Hood',i:'💨',a:()=>app.spawn('hood')}, {n:'Oven',i:'🍳',a:()=>app.spawn('oven')} ],
+                materials: [ {n:'White',i:'⚪',a:()=>app.color('white_matte')}, {n:'Gloss',i:'✨',a:()=>app.color('white_gloss')}, {n:'Sage',i:'🟢',a:()=>app.color('sage')}, {n:'Navy',i:'🔵',a:()=>app.color('navy')}, {n:'Wood',i:'🌳',a:()=>app.color('wood')} ],
+                save: [ {n:'Clear',i:'🗑',a:()=>app.reset()} ]
+            },
+            currentCat: null,
+            setTab: (cat, el) => {
+                ui.currentCat = cat;
+                document.querySelectorAll('.dock-tab').forEach(e=>e.classList.remove('active'));
+                el.classList.add('active');
+                ui.renderCards(cat);
+            },
+            refresh: () => { if(ui.currentCat) ui.renderCards(ui.currentCat); },
+            renderCards: (cat) => {
+                const con = document.getElementById('cards-container');
+                con.classList.remove('visible');
+                setTimeout(() => {
+                    con.innerHTML = '';
+                    if(state.selected && cat !== 'save') {
+                         [{n:'Rotate',i:'↻',a:app.rotate}, {n:'Clone',i:'📑',a:app.duplicate}, {n:'Delete',i:'✕',a:app.delete, cls:'action-delete'}].forEach(b => ui.addCard(con, b));
+                         const div = document.createElement('div'); div.style.borderRight='1px solid rgba(0,0,0,0.1)'; div.style.margin='0 5px'; con.appendChild(div);
+                    }
+                    (ui.menus[cat]||[]).forEach(i => ui.addCard(con, i));
+                    con.classList.add('visible');
+                }, 200);
+            },
+            addCard: (p, i) => {
+                const c = document.createElement('div'); c.className = `card ${i.cls||''}`;
+                c.innerHTML = `<div class="card-icon">${i.i}</div><div class="card-label">${i.n}</div>`;
+                c.onclick = i.a; p.appendChild(c);
+            }
+        };
+
+        // --- INIT FUNCTION (DEFINED FOURTH) ---
+        function init() {
+            try {
+                // RENDERER
+                renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+                renderer.shadowMap.enabled = true;
+                renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                renderer.toneMapping = THREE.ACESFilmicToneMapping;
+                document.body.appendChild(renderer.domElement);
+
+                // SCENE
+                scene = new THREE.Scene();
+                scene.background = new THREE.Color(CONFIG.bgColor);
+                scene.fog = new THREE.Fog(CONFIG.bgColor, 500, 3000);
+
+                // ENVIRONMENT
+                const pmremGenerator = new THREE.PMREMGenerator(renderer);
+                pmremGenerator.compileEquirectangularShader();
+                scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+                pmremGenerator.dispose();
+
+                // LIGHTS
+                const sun = new THREE.DirectionalLight(0xfff0e6, 1.5);
+                sun.position.set(200, 500, 300);
+                sun.castShadow = true;
+                sun.shadow.mapSize.set(1024, 1024);
+                sun.shadow.normalBias = 0.04;
+                scene.add(sun);
+                scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+                // CAMERA
+                camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 10, 5000);
+                camera.position.set(350, 250, 350);
+                camera.lookAt(0, 50, 0);
+
+                // GROUPS
+                mainGroup = new THREE.Group(); scene.add(mainGroup);
+                labelsGroup = new THREE.Group(); scene.add(labelsGroup);
+                
+                // SHADOW CATCHER
+                const shadowPlane = new THREE.Mesh(new THREE.PlaneGeometry(3000, 3000), new THREE.ShadowMaterial({ opacity: 0.1, color: 0x000000 }));
+                shadowPlane.rotation.x = -Math.PI / 2; shadowPlane.receiveShadow = true; shadowPlane.position.y = 0.1;
+                scene.add(shadowPlane);
+
+                // DRAG PLANE
+                dragPlane = new THREE.Mesh(new THREE.PlaneGeometry(5000, 5000), new THREE.MeshBasicMaterial({ visible: false }));
+                dragPlane.rotation.x = -Math.PI / 2; scene.add(dragPlane);
+
+                // CONTROLS
+                controls = new OrbitControls(camera, renderer.domElement);
+                controls.enableDamping = true; controls.maxPolarAngle = Math.PI / 2 - 0.05;
+
+                // EVENTS
+                raycaster = new THREE.Raycaster();
+                setupInteraction();
+                window.addEventListener('resize', onResize);
+
+                // START
+                animate();
+                
+                // --- SAFE CALLS AFTER INIT ---
+                ui.setTab('kitchen', document.querySelector('.dock-tab.active'));
+                core.spawn('base_60');
+                
+                // Remove Loader
+                setTimeout(() => {
+                    const l = document.getElementById('loader');
+                    l.style.opacity = 0;
+                    setTimeout(() => l.remove(), 500);
+                }, 800);
+
+            } catch (e) {
+                console.error(e);
+                alert("Errore WebGL: " + e.message);
+            }
+        }
 
         // --- INTERACTION ---
         function setupInteraction() {
@@ -406,44 +439,12 @@
             return raycaster.intersectObjects(list, true);
         }
 
-        // --- UI ---
-        const ui = {
-            menus: {
-                kitchen: [ {n:'Base 60',i:'◻️',a:()=>app.spawn('base_60')}, {n:'Base 90',i:'▭',a:()=>app.spawn('base_90')}, {n:'Sink',i:'🚰',a:()=>app.spawn('sink')}, {n:'Tall',i:'▮',a:()=>app.spawn('tall_60')}, {n:'Wall',i:'▫️',a:()=>app.spawn('wall_60')} ],
-                appliances: [ {n:'Fridge',i:'❄️',a:()=>app.spawn('fridge')}, {n:'Hood',i:'💨',a:()=>app.spawn('hood')}, {n:'Oven',i:'🍳',a:()=>app.spawn('oven')} ],
-                materials: [ {n:'White',i:'⚪',a:()=>app.color('white_matte')}, {n:'Gloss',i:'✨',a:()=>app.color('white_gloss')}, {n:'Sage',i:'🟢',a:()=>app.color('sage')}, {n:'Navy',i:'🔵',a:()=>app.color('navy')}, {n:'Wood',i:'🌳',a:()=>app.color('wood')} ],
-                save: [ {n:'Clear',i:'🗑',a:()=>app.reset()} ]
-            },
-            currentCat: null,
-            setTab: (cat, el) => {
-                ui.currentCat = cat;
-                document.querySelectorAll('.dock-tab').forEach(e=>e.classList.remove('active'));
-                el.classList.add('active');
-                ui.renderCards(cat);
-            },
-            refresh: () => { if(ui.currentCat) ui.renderCards(ui.currentCat); },
-            renderCards: (cat) => {
-                const con = document.getElementById('cards-container');
-                con.classList.remove('visible');
-                setTimeout(() => {
-                    con.innerHTML = '';
-                    if(state.selected && cat !== 'save') {
-                         [{n:'Rotate',i:'↻',a:app.rotate}, {n:'Clone',i:'📑',a:app.duplicate}, {n:'Delete',i:'✕',a:app.delete, cls:'action-delete'}].forEach(b => ui.addCard(con, b));
-                         const div = document.createElement('div'); div.style.borderRight='1px solid rgba(0,0,0,0.1)'; div.style.margin='0 5px'; con.appendChild(div);
-                    }
-                    (ui.menus[cat]||[]).forEach(i => ui.addCard(con, i));
-                    con.classList.add('visible');
-                }, 200);
-            },
-            addCard: (p, i) => {
-                const c = document.createElement('div'); c.className = `card ${i.cls||''}`;
-                c.innerHTML = `<div class="card-icon">${i.i}</div><div class="card-label">${i.n}</div>`;
-                c.onclick = i.a; p.appendChild(c);
-            }
-        };
-
         function onResize() { camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }
         function animate() { requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); }
+
+        // --- START THE ENGINE (LAST LINE) ---
+        init();
+
     </script>
 </body>
 </html>
