@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Kitchen Studio 3D - Ultimate Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Font e Icone -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --accent: #d9775f; --dark: #2c2a29; --light: #ffffff;
+            --dock-bg: rgba(40, 40, 40, 0.85);
+            --panel-bg: rgba(255, 255, 255, 0.9);
+            --radius: 16px;
+        }
+
+        body { margin: 0; overflow: hidden; font-family: 'Inter', sans-serif; background: #e0e0e0; touch-action: none; user-select: none; }
+        
+        /* 3D CANVAS */
+        #canvas-container { position: absolute; inset: 0; outline: none; }
+
+        /* HEADER */
+        #header {
+            position: absolute; top: 0; left: 0; right: 0;
+            padding: 15px 25px; pointer-events: none;
+            display: flex; justify-content: space-between; align-items: flex-start;
+        }
+        .brand { font-weight: 700; font-size: 18px; color: var(--dark); letter-spacing: -0.5px; opacity: 0.6; }
+        .stats { font-size: 12px; color: #666; font-variant-numeric: tabular-nums; }
+        
+        /* UTILS TOP RIGHT */
+        .top-tools { display: flex; gap: 10px; pointer-events: auto; }
+        .tool-btn {
+            width: 40px; height: 40px; border-radius: 50%; border: none;
+            background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            font-size: 18px; cursor: pointer; transition: transform 0.2s;
+            display: grid; place-items: center;
+        }
+        .tool-btn:active { transform: scale(0.9); }
+        .active-tool { background: var(--accent); color: white; }
+
+        /* DOCK BOTTOM */
+        #dock-container {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 800px;
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
+            pointer-events: none; z-index: 100;
+        }
+
+        /* MENU CATEGORIE (Dock) */
+        .dock {
+            pointer-events: auto;
+            background: var(--dock-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            padding: 8px 12px; border-radius: 24px;
+            display: flex; gap: 8px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        
+        .dock-item {
+            position: relative;
+            padding: 10px 18px; border-radius: 16px; color: #aaa;
+            cursor: pointer; font-size: 13px; font-weight: 500;
+            transition: all 0.2s; white-space: nowrap; display: flex; flex-direction: column; align-items: center; gap: 4px;
+        }
+        .dock-item span { font-size: 20px; display: block; height: 24px; }
+        .dock-item.active { background: rgba(255,255,255,0.15); color: white; transform: translateY(-5px); }
+
+        /* SOTTOMENU A COMPARSA */
+        #submenu {
+            pointer-events: auto; width: 100%;
+            background: var(--panel-bg); backdrop-filter: blur(12px);
+            border-radius: 20px; padding: 15px;
+            display: none; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            margin-bottom: 5px; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+        .sub-btn {
+            background: white; border: 1px solid rgba(0,0,0,0.05); border-radius: 12px;
+            padding: 10px 5px; display: flex; flex-direction: column; align-items: center; gap: 6px;
+            cursor: pointer; transition: 0.2s; height: 70px; justify-content: center;
+        }
+        .sub-btn:active { transform: scale(0.95); background: var(--accent); color: white; }
+        .sub-icon { font-size: 22px; }
+        .sub-label { font-size: 10px; font-weight: 600; text-align: center; line-height: 1.1; }
+
+        /* NOTIFICHE */
+        #toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100%);
+            background: #222; color: #fff; padding: 8px 16px; border-radius: 20px; font-size: 12px;
+            opacity: 0; transition: 0.4s; pointer-events: none; z-index: 1000;
+        }
+        #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* LOADER */
+        #loader {
+            position: fixed; inset: 0; z-index: 9999;
+            background: #f0f0f0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+    </style>
+    <!-- THREE.JS IMPORTMAP -->
+    <script type="importmap">
+        { "imports": { 
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js", 
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" 
+        }}
+    </script>
+</head>
+<body>
+
+    <div id="loader"><h2>Kitchen Studio</h2><p style="opacity:0.5; font-size:12px;">Caricamento...</p></div>
+    <div id="toast">Progetto salvato</div>
+
+    <div id="header">
+        <div class="brand">GECO<span style="opacity:0.4;">.srl</span></div>
+        <div class="top-tools">
+            <button class="tool-btn" title="Undo" onclick="app.undo()">↶</button>
+            <button class="tool-btn" title="Redo" onclick="app.redo()">↷</button>
+            <button class="tool-btn" title="2D/3D" onclick="app.toggleView()">isometric</button>
+            <button class="tool-btn" title="CAD/Ricalco" onclick="app.importCAD()">📐</button>
+            <button class="tool-btn" style="background:#222; color:white;" onclick="app.screenshot()">📷</button>
+        </div>
+    </div>
+
+    <div id="dock-container">
+        <!-- Submenu Area -->
+        <div id="submenu"></div>
+        
+        <!-- Main Dock -->
+        <div class="dock">
+            <div class="dock-item active" onclick="app.setMenu('moduli')">
+                <span>🧊</span> Moduli
+            </div>
+            <div class="dock-item" onclick="app.setMenu('appliance')">
+                <span>🔥</span> Elettro
+            </div>
+            <div class="dock-item" onclick="app.setMenu('deco')">
+                <span>💡</span> Extra
+            </div>
+            <div class="dock-item" onclick="app.setMenu('finiture')">
+                <span>🎨</span> Finiture
+            </div>
+            <div class="dock-item" onclick="app.setMenu('file')">
+                <span>💾</span> File
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { DragControls } from 'three/addons/controls/DragControls.js';
+        import { RectAreaLightUniformsLib } from 'three/addons/lights/RectAreaLightUniformsLib.js';
+        
+        // --- GLOBAL VARIABLES ---
+        const config = { snapDist: 8, gridSize: 1600 };
+        const state = { 
+            modules: [], selected: null, clipboard: null, 
+            history: [], histIndex: -1, dragging: false, view2d: false 
+        };
+        const settings = {
+            activeMenu: 'moduli',
+            globalHeight: 270, // Altezza soffitto
+            defaultColor: 'white_mat',
+            wallColor: 'tortora'
+        };
+        
+        // Three Scene
+        let scene, camera, renderer, controls, raycaster, planeFloor;
+        let mainGroup, dimensionsGroup; // Groups for logic separation
+        let textureCache = {};
+        
+        // APP INTERFACE
+        window.app = {
+            setMenu: (m) => updateDock(m),
+            undo: () => performUndo(),
+            redo: () => performRedo(),
+            screenshot: () => takeHighResPhoto(),
+            toggleView: () => togglePlanView(),
+            importCAD: () => loadCadImage(),
+            
+            spawn: (t) => spawnModule(t),
+            setColor: (c) => applyColor(c),
+            delete: () => deleteSelected(),
+            rotate: () => rotateSelected(),
+            duplicate: () => duplicateSelected()
+        };
+
+        init();
+
+        // --- INIT SYSTEM ---
+        function init() {
+            // Scene Setup
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xeeece9);
+            scene.fog = new THREE.Fog(0xeeece9, 600, 5000); // Fixed White screen on Zoomout
+            
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio > 1 ? 1.5 : 1);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.body.appendChild(renderer.domElement);
+
+            // Camera Setup
+            const asp = window.innerWidth / window.innerHeight;
+            const d = 400; 
+            camera = new THREE.OrthographicCamera(-d*asp, d*asp, d, -d, 1, 8000);
+            camera.position.set(500, 500, 500); 
+            camera.lookAt(0, 0, 0);
+
+            // Lighting
+            const amb = new THREE.HemisphereLight(0xffffff, 0xd4d4d4, 0.7); 
+            scene.add(amb);
+            const dir = new THREE.DirectionalLight(0xfff5e6, 1.2);
+            dir.position.set(200, 450, 300);
+            dir.castShadow = true;
+            dir.shadow.mapSize.set(2048, 2048);
+            dir.shadow.bias = -0.0005;
+            scene.add(dir);
+
+            // Groups
+            mainGroup = new THREE.Group(); scene.add(mainGroup);
+            dimensionsGroup = new THREE.Group(); scene.add(dimensionsGroup);
+
+            // Env
+            createEnvironment();
+            
+            // Interactive Controls
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true; 
+            controls.dampingFactor = 0.1;
+            controls.maxPolarAngle = Math.PI/2;
+            
+            // Event Listeners
+            raycaster = new THREE.Raycaster();
+            planeFloor = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+            
+            window.addEventListener('resize', onResize);
+            document.addEventListener('keydown', onKey);
+            
+            // Drag Logic custom implementation
+            setupDragSystem();
+
+            // Load Menu
+            updateDock('moduli');
+            
+            // Remove Loader
+            setTimeout(()=>{
+                 document.getElementById('loader').style.display='none';
+                 saveState(); // Init History
+                 spawnModule('base_60', {x:0, z:0});
+            }, 800);
+
+            animate();
+        }
+
+        // --- CORE MODULE SYSTEM ---
+        function getDef(type) {
+            // Misure e Tipologie (H=altezza, P=prof, Y=quota)
+            const map = {
+                // BASI
+                base_30: {w:30, h:86, d:60, y:0, t:'cab'}, base_60: {w:60, h:86, d:60, y:0, t:'cab'},
+                base_90: {w:90, h:86, d:60, y:0, t:'cab'}, base_corner: {w:100, h:86, d:60, y:0, t:'cab_corner'},
+                
+                // ELETTRO BASI
+                oven_base: {w:60, h:86, d:60, y:0, t:'oven'}, dw_60: {w:60, h:86, d:60, y:0, t:'dw'}, // dw = dishwasher
+                sink_base: {w:90, h:86, d:60, y:0, t:'sink'},
+                
+                // PENSILI
+                wall_60: {w:60, h:72, d:35, y:144, t:'cab_up'}, wall_90: {w:90, h:72, d:35, y:144, t:'cab_up'},
+                hood_box: {w:90, h:60, d:35, y:144, t:'hood_modern'},
+                
+                // COLONNE
+                tall_60: {w:60, h:216, d:60, y:0, t:'tall'}, 
+                tall_oven: {w:60, h:216, d:60, y:0, t:'tall_oven'}, 
+                fridge: {w:60, h:216, d:60, y:0, t:'fridge'},
+
+                // EXTRA
+                lamp: {w:30, h:80, d:30, y:180, t:'lamp'},
+                shelf: {w:90, h:3, d:25, y:130, t:'shelf'},
+            };
+            return map[type] || map['base_60'];
+        }
+
+        function spawnModule(type, posOverride = null) {
+            const def = getDef(type);
+            const data = {
+                id: crypto.randomUUID(),
+                type: type,
+                x: posOverride ? posOverride.x : 50,
+                z: posOverride ? posOverride.z : 50,
+                rot: 0,
+                color: settings.defaultColor,
+                ...def
+            };
+            buildModule3D(data);
+            state.modules.push(data);
+            saveState();
+        }
+
+        // --- GEOMETRY BUILDER V2 (Procedural) ---
+        function getMaterial(key) {
+            if(textureCache[key]) return textureCache[key];
+            
+            let mat;
+            // Palette colori avanzata
+            if(key === 'white_mat') mat = new THREE.MeshStandardMaterial({color: 0xf5f5f7, roughness: 0.8});
+            else if(key === 'white_gloss') mat = new THREE.MeshPhysicalMaterial({color: 0xffffff, roughness: 0.1, transmission:0, clearcoat:1});
+            else if(key === 'tortora') mat = new THREE.MeshStandardMaterial({color: 0xdcd0c9, roughness: 0.9}); // ROSA TORTORA
+            else if(key === 'sage') mat = new THREE.MeshStandardMaterial({color: 0xa8bca3, roughness: 0.9});
+            else if(key === 'anthracite') mat = new THREE.MeshStandardMaterial({color: 0x333333, roughness: 0.8});
+            else if(key === 'oak') mat = makeTexture('#cfb096', 'wood'); 
+            else if(key === 'steel') mat = new THREE.MeshStandardMaterial({color: 0xbdbebf, metalness:0.9, roughness:0.3});
+            else if(key === 'glass_black') mat = new THREE.MeshPhysicalMaterial({color: 0x111111, roughness:0, metalness:0.8, clearcoat:1});
+            else if(key === 'lamp_glow') mat = new THREE.MeshBasicMaterial({color: 0xffaa00});
+            else mat = new THREE.MeshStandardMaterial({color: 0xffffff});
+
+            textureCache[key] = mat;
+            return mat;
+        }
+
+        // Generatore texture procedurale migliorato
+        function makeTexture(colorHex, pattern) {
+            const cv = document.createElement('canvas'); cv.width=256; cv.height=256;
+            const ctx = cv.getContext('2d');
+            ctx.fillStyle = colorHex; ctx.fillRect(0,0,256,256);
+            
+            if(pattern === 'wood') {
+               ctx.globalAlpha = 0.08; ctx.globalCompositeOperation = 'multiply';
+               for(let i=0;i<40;i++) {
+                   ctx.beginPath(); ctx.moveTo(0, Math.random()*256);
+                   ctx.bezierCurveTo(80, Math.random()*256, 150, Math.random()*256, 256, Math.random()*256);
+                   ctx.strokeStyle = '#6e513a'; ctx.lineWidth=1+Math.random(); ctx.stroke();
+               }
+            }
+            const tex = new THREE.CanvasTexture(cv);
+            return new THREE.MeshStandardMaterial({map: tex, roughness: 0.7});
+        }
+
+        function buildModule3D(data) {
+            // Se esiste già mesh, rimuovi
+            if(data.mesh) { mainGroup.remove(data.mesh); disposeObj(data.mesh); }
+            
+            const g = new THREE.Group();
+            g.userData = { id: data.id, data: data }; // Link data to mesh
+            
+            const matBody = getMaterial(data.color);
+            const matTop = getMaterial('anthracite'); // Top standard per ora
+            const matKicks = getMaterial('steel');
+
+            // --- STRUTTURA LOGICA MODULO ---
+            const { w, h, d, t } = data;
+            const zoccolo = (t==='cab_up' || t==='shelf' || t==='hood_modern' || t==='lamp') ? 0 : 10;
+            const bodyH = h - zoccolo;
+            
+            // 1. ZOCCOLO
+            if(zoccolo > 0 && t !== 'fridge') {
+                const k = new THREE.Mesh(new THREE.BoxGeometry(w-4, zoccolo, d-5), matKicks);
+                k.position.set(0, zoccolo/2, -2.5);
+                g.add(k);
+            }
+
+            // 2. CASSA
+            if(t !== 'lamp' && t !== 'shelf') {
+                const b = new THREE.Mesh(new THREE.BoxGeometry(w, bodyH, d), matBody);
+                b.position.set(0, zoccolo + bodyH/2, 0);
+                b.castShadow = true; b.receiveShadow = true;
+                g.add(b);
+            }
+
+            // 3. ANTE & FRONTALI (Geometria Dettagliata)
+            // Fix "Door Geometry": pannello + leggero chamfer o maniglia vera
+            if(t.includes('cab') || t==='tall') {
+                const doorH = (t==='cab_up') ? bodyH : bodyH;
+                const isDouble = w > 60;
+                
+                const mkDoor = (dw, dx) => {
+                    const dr = new THREE.Mesh(new THREE.BoxGeometry(dw-0.4, doorH-0.4, 2), matBody);
+                    dr.position.set(dx, zoccolo + bodyH/2, d/2 + 1);
+                    dr.castShadow=true;
+                    // Maniglia
+                    const han = new THREE.Mesh(new THREE.BoxGeometry(dw/2, 1, 2), getMaterial('steel')); // Profilo Gola
+                    han.position.set(0, (t==='cab_up') ? -doorH/2 + 2 : doorH/2 - 2, 0); // Gola in basso se pensile
+                    dr.add(han);
+                    return dr;
+                }
+
+                if(isDouble) {
+                    g.add(mkDoor(w/2, -w/4));
+                    g.add(mkDoor(w/2, w/4));
+                } else {
+                    g.add(mkDoor(w, 0));
+                }
+            }
+
+            // 4. ELEMENTI SPECIFICI
+            if(t === 'sink') {
+                const sink = new THREE.Mesh(new THREE.BoxGeometry(w-10, 15, d-10), getMaterial('steel'));
+                sink.position.set(0, zoccolo+bodyH, 0);
+                // Rubinetto
+                const tap = new THREE.Mesh(new THREE.CylinderGeometry(1,1,15), getMaterial('steel'));
+                tap.position.set(0, zoccolo+bodyH+10, -10);
+                tap.rotation.x = 0.5;
+                g.add(sink, tap);
+            }
+
+            if(t === 'hood_modern') {
+                // T Shape inversa
+                const pipe = new THREE.Mesh(new THREE.BoxGeometry(25, 40, 25), getMaterial('steel'));
+                pipe.position.set(0, h-20, 0);
+                const flat = new THREE.Mesh(new THREE.BoxGeometry(w, 6, d), getMaterial('steel'));
+                flat.position.set(0, 3, 0); // basso
+                g.add(pipe, flat);
+            }
+
+            if(t === 'oven' || t === 'tall_oven') {
+                const oh = 59; 
+                const oy = t==='tall_oven' ? 100 : zoccolo + bodyH - 60;
+                
+                // Foro forno
+                const ovn = new THREE.Mesh(new THREE.BoxGeometry(w-2, oh, 2), getMaterial('glass_black'));
+                ovn.position.set(0, oy, d/2 + 1.1);
+                // Maniglia forno
+                const bar = new THREE.Mesh(new THREE.BoxGeometry(w-10, 2, 3), getMaterial('steel'));
+                bar.position.set(0, oy + 25, d/2 + 2);
+                g.add(ovn, bar);
+            }
+
+            if(t === 'lamp') {
+                // Sospensione
+                const wire = new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.5,50), getMaterial('steel'));
+                wire.position.y = 50;
+                const shade = new THREE.Mesh(new THREE.ConeGeometry(15, 20, 32, 1, true), getMaterial('anthracite'));
+                shade.position.y = 20;
+                const bulb = new THREE.Mesh(new THREE.SphereGeometry(3), getMaterial('lamp_glow'));
+                bulb.position.y = 10;
+                
+                const light = new THREE.PointLight(0xffaa00, 0.5, 300);
+                light.position.y = 5;
+                bulb.add(light);
+                
+                g.add(wire, shade, bulb);
+            }
+            
+            // Apply Transform
+            g.position.set(data.x, data.y, data.z);
+            g.rotation.y = data.rot;
+            
+            mainGroup.add(g);
+            data.mesh = g;
+            updateDimensionLines();
+        }
+
+        // --- INTERACTION: DRAG N SNAP ---
+        function setupDragSystem() {
+            let dragPlane = new THREE.Mesh(new THREE.PlaneGeometry(5000,5000), new THREE.MeshBasicMaterial({visible:false}));
+            dragPlane.rotation.x = -Math.PI/2;
+            scene.add(dragPlane);
+            
+            const inputState = { isDown: false, start: new THREE.Vector3(), offset: new THREE.Vector3() };
+            
+            renderer.domElement.addEventListener('pointerdown', e => {
+                const nv = getNDCCoords(e);
+                raycaster.setFromCamera(nv, camera);
+                const hits = raycaster.intersectObjects(mainGroup.children, true); // Deep intersect
+                
+                if(hits.length > 0) {
+                    let topGrp = hits[0].object; 
+                    // Climb up to find the group with data
+                    while(topGrp.parent !== mainGroup) { topGrp = topGrp.parent; }
+                    
+                    state.selected = topGrp.userData.data;
+                    state.dragging = true;
+                    inputState.isDown = true;
+                    controls.enabled = false; // Disable Orbit
+
+                    // Calc Offset per non far saltare l'oggetto al centro mouse
+                    const planeHit = raycaster.intersectObject(dragPlane)[0];
+                    if(planeHit) {
+                         inputState.offset.copy(planeHit.point).sub(topGrp.position);
+                    }
+                    
+                    highlightSelection();
+                } else {
+                    state.selected = null;
+                    highlightSelection();
+                }
+            });
+
+            window.addEventListener('pointermove', e => {
+                if(!state.dragging || !state.selected) return;
+                
+                const nv = getNDCCoords(e);
+                raycaster.setFromCamera(nv, camera);
+                const hit = raycaster.intersectObject(dragPlane)[0];
+                
+                if(hit) {
+                    let tx = hit.point.x - inputState.offset.x;
+                    let tz = hit.point.z - inputState.offset.z;
+                    
+                    // GRID & MAGNETIC SNAP logic
+                    if(config.snapDist > 0) {
+                        // 1. Grid Snap standard
+                        /* tx = Math.round(tx / 5) * 5; tz = Math.round(tz / 5) * 5; */
+
+                        // 2. Magnetic Neighbor Snap (Il più utile per cucine)
+                        let bestX = tx, bestZ = tz;
+                        let minDist = 15; // raggio attrazione
+                        
+                        const self = state.selected;
+                        
+                        state.modules.forEach(other => {
+                            if(other === self) return;
+                            
+                            // Check X Alignment (side by side)
+                            const dx = (tx - other.x);
+                            const dz = (tz - other.z);
+                            const widthSum = (self.w/2 + other.w/2);
+                            const depthSum = (self.d/2 + other.d/2);
+                            
+                            // SNAP SIDE BY SIDE X (Classico allineamento basi)
+                            if(Math.abs(dz) < 10 && Math.abs(dx - widthSum) < minDist) {
+                                bestX = other.x + widthSum;
+                                bestZ = other.z; // Align Depth exact
+                            }
+                             else if(Math.abs(dz) < 10 && Math.abs(dx + widthSum) < minDist) {
+                                bestX = other.x - widthSum;
+                                bestZ = other.z; 
+                            }
+                        });
+                        tx = bestX; tz = bestZ;
+                    }
+                    
+                    state.selected.x = tx; state.selected.z = tz;
+                    updateObjTransform(state.selected);
+                    updateDimensionLines();
+                }
+            });
+
+            window.addEventListener('pointerup', () => {
+                if(state.dragging) {
+                    state.dragging = false;
+                    controls.enabled = true;
+                    saveState(); // Commit change to history
+                }
+            });
+        }
+
+        // --- LOGIC UTILS ---
+        function updateObjTransform(d) {
+            d.mesh.position.set(d.x, d.y, d.z);
+            d.mesh.rotation.y = d.rot;
+        }
+
+        function highlightSelection() {
+            // Remove boxes
+            dimensionsGroup.clear();
+            
+            if(state.selected) {
+               updateDimensionLines();
+            }
+        }
+        
+        function rotateSelected() {
+            if(!state.selected) return;
+            state.selected.rot += Math.PI/2;
+            updateObjTransform(state.selected);
+            saveState();
+        }
+
+        function deleteSelected() {
+            if(!state.selected) return;
+            mainGroup.remove(state.selected.mesh);
+            state.modules = state.modules.filter(m => m !== state.selected);
+            state.selected = null;
+            highlightSelection();
+            saveState();
+        }
+
+        function performUndo() {
+            if(state.histIndex > 0) {
+                state.histIndex--;
+                loadFromJSON(state.history[state.histIndex], false);
+            }
+        }
+        
+        function performRedo() {
+            if(state.histIndex < state.history.length - 1) {
+                state.histIndex++;
+                loadFromJSON(state.history[state.histIndex], false);
+            }
+        }
+
+        function saveState() {
+            // Trim forward history if we branch
+            if(state.histIndex < state.history.length -1) {
+                state.history = state.history.slice(0, state.histIndex+1);
+            }
+            // Strip mesh objects to JSON
+            const simple = state.modules.map(m => {
+                const {mesh, ...rest} = m; 
+                return rest; 
+            });
+            const str = JSON.stringify(simple);
+            // Limit redundant saves
+            if(state.history[state.histIndex] !== str) {
+                state.history.push(str);
+                state.histIndex++;
+                // Max depth
+                if(state.history.length > 20) { state.history.shift(); state.histIndex--; }
+            }
+            // Auto-persist
+            localStorage.setItem('geco_kitchen_autosave', str);
+        }
+
+        // --- GRAPHICS: DIMENSIONS ---
+        function updateDimensionLines() {
+            dimensionsGroup.clear();
+            // Disegna solo se un oggetto è selezionato o global option? 
+            // Mostriamo ingombri dell'oggetto selezionato per pulizia
+            if(!state.selected) return;
+            
+            const m = state.selected;
+            const mat = new THREE.LineBasicMaterial({color: 0xd9775f, depthTest:false});
+            const box = new THREE.BoxHelper(m.mesh, 0xd9775f);
+            box.material = mat;
+            dimensionsGroup.add(box);
+            
+            // Labels Text
+            addLabel3D(`${m.w}cm`, new THREE.Vector3(m.x, m.y + m.h + 5, m.z));
+        }
+
+        function addLabel3D(text, pos) {
+            const cv = document.createElement('canvas'); cv.width=128; cv.height=64;
+            const cx = cv.getContext('2d');
+            cx.fillStyle='#d9775f'; cx.font="bold 24px Arial"; cx.textAlign='center';
+            cx.fillText(text, 64, 40);
+            
+            const tex = new THREE.CanvasTexture(cv);
+            const spr = new THREE.Sprite(new THREE.SpriteMaterial({map:tex, sizeAttenuation:false}));
+            spr.position.copy(pos);
+            spr.scale.set(0.1, 0.05, 1);
+            dimensionsGroup.add(spr);
+        }
+
+        // --- ENV & FLOOR ---
+        function createEnvironment() {
+            // Pavimento Infinito (Visivo)
+            const fGeo = new THREE.PlaneGeometry(3000, 3000);
+            const fMat = new THREE.MeshStandardMaterial({ color:0xebeae8, roughness:1, metalness:0 });
+            const floor = new THREE.Mesh(fGeo, fMat);
+            floor.rotation.x = -Math.PI/2;
+            floor.receiveShadow = true;
+            scene.add(floor);
+            
+            // Griglia leggera
+            const grid = new THREE.GridHelper(2000, 40, 0xcccccc, 0xdddddd);
+            grid.position.y = 0.5;
+            scene.add(grid);
+            
+            // Muri Angolo
+            const wallH = settings.globalHeight;
+            const w1 = new THREE.Mesh(new THREE.BoxGeometry(2000, wallH, 10), getMaterial('white_mat'));
+            w1.position.set(0, wallH/2, -100);
+            w1.receiveShadow = true;
+            
+            const w2 = new THREE.Mesh(new THREE.BoxGeometry(10, wallH, 2000), getMaterial('white_mat'));
+            w2.position.set(-1000, wallH/2, 0); // Spostato a sinistra fuori scena principale
+            // Usiamo un solo muro di fondo per estetica pulita o angolo?
+            scene.add(w1);
+        }
+
+        // --- UI LOGIC ---
+        const menus = {
+            moduli: [
+               {l:'Base 60', i:'◻️', a:'app.spawn("base_60")'},
+               {l:'Cassetti', i:'≣', a:'app.spawn("dw_60")'}, // reuse dw as drawers visually similar in low poly
+               {l:'Lavello', i:'🚰', a:'app.spawn("sink_base")'},
+               {l:'Forno', i:'🍳', a:'app.spawn("oven_base")'},
+               {l:'Pensile', i:'▫️', a:'app.spawn("wall_60")'},
+               {l:'Cappa', i:'💨', a:'app.spawn("hood_box")'},
+               {l:'Colonna', i:'▮', a:'app.spawn("tall_60")'},
+               {l:'Frigo', i:'❄️', a:'app.spawn("fridge")'},
+            ],
+            deco: [
+               {l:'Lampada', i:'💡', a:'app.spawn("lamp")'},
+               {l:'Mensola', i:'➖', a:'app.spawn("shelf")'},
+               {l:'CAD Plan', i:'📐', a:'app.importCAD()'},
+            ],
+            finiture: [
+                {l:'Bianco', i:'⚪', a:'app.setColor("white_mat")'},
+                {l:'Tortora', i:'🟤', a:'app.setColor("tortora")'},
+                {l:'Legno', i:'🌳', a:'app.setColor("oak")'},
+                {l:'Antracite', i:'⚫', a:'app.setColor("anthracite")'},
+            ],
+            file: [
+                {l:'Salva', i:'💾', a:'localStorage.setItem("geco_save", JSON.stringify(window.app.getJson())); showToast("Salvato!");'},
+                {l:'Reset', i:'🗑', a:'if(confirm("Cancello tutto?")) { window.location.reload(); }'},
+            ],
+            context: [
+                 {l:'Ruota', i:'↻', a:'app.rotate()'},
+                 {l:'Copia', i:'📋', a:'app.duplicate()'},
+                 {l:'Elimina', i:'✕', a:'app.delete()'},
+            ]
+        };
+
+        function updateDock(cat) {
+            // Aggiorna classi active
+            document.querySelectorAll('.dock-item').forEach(el => el.classList.remove('active'));
+            // Qui semplice mapping su onclick nell'html
+            
+            const sub = document.getElementById('submenu');
+            sub.innerHTML = '';
+            
+            const items = menus[cat] || [];
+            
+            items.forEach(it => {
+               const b = document.createElement('div');
+               b.className = 'sub-btn';
+               b.innerHTML = `<span class="sub-icon">${it.i}</span><span class="sub-label">${it.l}</span>`;
+               b.onclick = () => { eval(it.a); };
+               sub.appendChild(b);
+            });
+
+            // Se contestuale
+            if(cat === 'moduli' && state.selected) {
+                 menus.context.forEach(it => {
+                   const b = document.createElement('div');
+                   b.className = 'sub-btn'; b.style.borderColor = '#d9775f';
+                   b.innerHTML = `<span class="sub-icon">${it.i}</span><span class="sub-label">${it.l}</span>`;
+                   b.onclick = () => { eval(it.a); };
+                   sub.appendChild(b);
+                });
+            }
+            
+            sub.style.display = 'grid';
+        }
+
+        // Context check loop
+        setInterval(()=>{
+             if(state.selected && settings.activeMenu !== 'context_mode') {
+                 // Forziamo un aggiornamento dock se cambiamo selezione?
+                 // No, lasciamo statico, ma aggiungiamo tasti speciali.
+                 // In V3 implementiamo meglio UI Reactivity
+             }
+        }, 500);
+        
+        // --- HELPER FUNC ---
+        function applyColor(c) {
+            settings.defaultColor = c;
+            if(state.selected) {
+                state.selected.color = c;
+                buildModule3D(state.selected);
+                highlightSelection();
+                saveState();
+            }
+        }
+        
+        function duplicateSelected() {
+            if(!state.selected) return;
+            spawnModule(state.selected.type, {x: state.selected.x + 10, z: state.selected.z + 10});
+        }
+        
+        function getNDCCoords(e) {
+            const r = renderer.domElement.getBoundingClientRect();
+            return {
+                x: ((e.clientX - r.left) / r.width) * 2 - 1,
+                y: -((e.clientY - r.top) / r.height) * 2 + 1
+            };
+        }
+
+        function loadFromJSON(json, addToHist=true) {
+            if(!json) return;
+            const list = JSON.parse(json);
+            // Clear current
+            mainGroup.children.slice().forEach(c => { mainGroup.remove(c); disposeObj(c); });
+            state.modules = [];
+            
+            list.forEach(d => {
+                // Regen ID if collide? No standard behavior
+                buildModule3D(d);
+                state.modules.push(d);
+            });
+            if(addToHist) saveState();
+        }
+
+        function disposeObj(o) {
+             if(o.geometry) o.geometry.dispose();
+             if(o.material) {
+                 if(Array.isArray(o.material)) o.material.forEach(m=>m.dispose());
+                 else o.material.dispose();
+             }
+             o.children.forEach(c => disposeObj(c));
+        }
+
+        function takeHighResPhoto() {
+            renderer.render(scene, camera);
+            const data = renderer.domElement.toDataURL("image/png");
+            const w = window.open('about:blank', '_blank');
+            w.document.write(`<img src="${data}" style="width:100%"/>`);
+        }
+
+        function loadCadImage() {
+            const inp = document.createElement('input'); inp.type='file'; 
+            inp.onchange = e => {
+                const url = URL.createObjectURL(e.target.files[0]);
+                const plane = new THREE.Mesh(new THREE.PlaneGeometry(1000, 700), new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load(url), opacity:0.5, transparent:true}));
+                plane.rotation.x = -Math.PI/2; plane.position.y = 0.2;
+                scene.add(plane);
+            }
+            inp.click();
+        }
+
+        function togglePlanView() {
+            state.view2d = !state.view2d;
+            if(state.view2d) {
+                controls.enabled = false;
+                const top = { x: camera.position.x, y: camera.position.y, z: camera.position.z }; // Store
+                // Tweening manu (semplificato)
+                camera.position.set(0, 1000, 0);
+                camera.zoom = 1.5;
+                camera.updateProjectionMatrix();
+                camera.lookAt(0,0,0);
+            } else {
+                controls.enabled = true;
+                camera.position.set(500,500,500);
+                camera.zoom = 1;
+                camera.updateProjectionMatrix();
+                camera.lookAt(0,0,0);
+            }
+        }
+        
+        function onResize() {
+            const asp = window.innerWidth/window.innerHeight;
+            const d = 400; 
+            camera.left = -d*asp; camera.right = d*asp;
+            camera.top = d; camera.bottom = -d;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function onKey(e) {
+            if((e.ctrlKey || e.metaKey) && e.key === 'z') performUndo();
+            if((e.ctrlKey || e.metaKey) && e.key === 'y') performRedo();
+            if(e.key === 'Delete' || e.key === 'Backspace') deleteSelected();
+        }
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+            // Facciamo guardare le etichette sempre verso camera
+            dimensionsGroup.children.forEach(c => {
+                 if(c.isSprite) return; // Sprite fa da solo
+                 // se fosse testo 3d qui ruoteremmo
+            });
+        }
+        
+        window.showToast = (msg) => {
+             const t = document.getElementById('toast');
+             t.textContent = msg; t.classList.add('show');
+             setTimeout(()=>t.classList.remove('show'), 2000);
+        }
+
+        // Auto Load
+        const autosave = localStorage.getItem('geco_kitchen_autosave');
+        if(autosave) loadFromJSON(autosave);
+    </script>
+</body>
+</html>
